@@ -1,0 +1,98 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long 
+const int N=2e5+100;
+int arr[N];
+int tr[N*4];
+int lz[N*4];
+int chg[N*4];
+bool mark[N*4];
+int n;
+void up(int p)
+{
+    tr[p]=tr[p<<1]+tr[p<<1|1];
+}
+void addlazy(int p,int n,int c)
+{
+    tr[p]+=n*c;
+    lz[p]+=c; 
+}
+void updatelazy(int p,int n,int c)
+{
+    mark[p]=1;
+    lz[p]=0;
+    tr[p]=n*c;
+    chg[p]=c;
+}
+void down(int p,int ln,int rn)
+{
+    if(mark[p])
+    {
+        mark[p]=0;
+        updatelazy(p<<1,ln,chg[p]);
+        updatelazy(p<<1|1,rn,chg[p]);
+        chg[p]=0;
+    }
+    addlazy(p<<1,ln,lz[p]);
+    addlazy(p<<1|1,rn,lz[p]);
+    lz[p]=0;
+}
+void build(int p,int l,int r)
+{
+    if(l==r)
+    {
+        tr[p]=arr[r];
+        return;
+    }
+    int mid=l+r>>1;
+    build(p<<1,l,mid);
+    build(p<<1|1,mid+1,r);
+    up(p);
+}
+void add(int jl,int jr,int l,int r,int p,int c)
+{
+    if(jl<=l && r<=jr)
+    {
+        addlazy(p,r-l+1,c);
+        return;
+    }
+    int mid=l+r>>1;
+    down(p,mid-l+1,r-mid);
+    if(jl<=mid) add(jl,jr,l,mid,p<<1,c);
+    if(jr>mid) add(jl,jr,mid+1,p<<1|1,r,c);
+    up(p);
+}
+void update(int jl,int jr,int l,int r,int p,int c)
+{
+    if(jl<=l && r<=jr)
+    {
+        updatelazy(p,r-l+1,c);
+        return;
+    }
+    int mid=l+r>>1;
+    down(p,mid-l+1,r-mid);
+    if(jl<=mid) update(jl,jr,l,mid,p<<1,c);
+    if(jr>mid) update(jl,jr,mid+1,p<<1|1,r,c);
+    up(p);
+}
+int getsum(int jl,int jr,int l,int r,int p)
+{
+    if(jl<=l && r<=jr)
+    {
+        return tr[p];
+    }
+    int mid=l+r>>1;
+    down(p,mid-l+1,r-mid);
+    int sum=0;
+    if(jl<=mid) sum+=getsum(jl,jr,l,mid,p<<1);
+    if(jr>mid) sum+=getsum(jl,jr,mid+1,r,p<<1|1);
+    return sum;
+}
+int main()
+{
+    cin>>n;
+    for(int i=1;i<=n;i++) cin>>arr[i];
+    build(1,1,n);
+
+    return 0;
+}
