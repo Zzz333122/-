@@ -1,0 +1,51 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 1e7+10;
+int a[N];
+int b[N];
+int mark[N<<2];
+int n, m;
+bool flag = 0;
+int ans = 0;
+//利用线段树这个数据结构来完成
+void up(int u)// 当前海报 
+{
+    mark[u] = mark[u << 1 ] & mark[u << 1|1];//如果左右区间被完全覆盖则父节点就被完全覆盖了*******
+}
+
+void work(int u, int l, int r, int jl, int jr) // jl和jr是旧的广告
+{
+    if (mark[u])
+        return;             // 当前海报已经出现直接return
+    if (jl <= l && r <= jr) // [jl,jr]完全包含[l,r] ,旧出现的广告 完全包含 新出现的广告, 旧的海报可以出现
+    {
+        flag = 1;
+        mark[u] = 1;
+        return;
+    }
+    int mid = l + r >> 1; // 对后出现的海报出现
+    //二分区间->遍历每一个区间
+    if (jl <= mid)
+        work(u << 1, l, mid, jl, jr);
+    if (jr > mid)
+        work(u << 1 | 1, mid + 1, r, jl, jr);
+    up(u);
+}
+
+signed main()
+{
+    cin >> n >> m;
+    for (int i = 1; i <= m; i++)
+        cin >> a[i] >> b[i];
+    for (int i = m; i ; i--)
+    {
+        flag = 0;
+        work(1, 1, n, a[i], b[i]);
+        if (flag)
+            ans++;
+    }
+    cout << ans << endl;
+
+    return 0;
+}
