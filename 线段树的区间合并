@@ -108,10 +108,10 @@ vector<int> query(int jl, int jr, int l, int r, int p) // 找能到影响[jl,jr]
         return query(jl, jr, l, mid, p << 1); // 这里是jr<=mid
     if (jl > mid)//目标全在线段树右边
         return query(jl, jr, mid + 1, r, p << 1 | 1); // jl>mid
-    //左右两边都有目标区间
+    //该区间完全覆盖目标区间
     vector<int> l1 = query(jl, jr, l, mid, p << 1);
     vector<int> l2 = query(jl, jr, mid + 1, r, p << 1 | 1);
-
+    //这是区间[jl,mid]和[mid+1,jr]的信息
     int llen = l1[0], lpre = l1[1], lsuf = l1[2];
     int rlen = l2[0], rpre = l2[1], rsuf = l2[2];
     //处理有关目标区间的三个信息
