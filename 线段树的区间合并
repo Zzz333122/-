@@ -115,9 +115,9 @@ vector<int> query(int jl, int jr, int l, int r, int p) // 找能到影响[jl,jr]
     int llen = l1[0], lpre = l1[1], lsuf = l1[2];
     int rlen = l2[0], rpre = l2[1], rsuf = l2[2];
     //处理有关目标区间的三个信息
-    int len = max(max(llen, rlen), lsuf + rpre);
-    int pre = llen < mid - max(l, jl) + 1 ? lpre : (llen + rpre);
-    int suf = rlen < min(jr, r) - mid ? rsuf : (lsuf + rlen);
+    int len = max(max(llen, rlen), lsuf + rpre);//********
+    int pre = llen < mid - max(l, jl) + 1 ? lpre : (llen + rpre);//*********
+    int suf = rlen < min(jr, r) - mid ? rsuf : (lsuf + rlen);//******
     a.push_back(len);
     a.push_back(pre);
     a.push_back(suf);
