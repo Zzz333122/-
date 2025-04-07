@@ -104,17 +104,18 @@ vector<int> query(int jl, int jr, int l, int r, int p) // 找能到影响[jl,jr]
     int mid = l + r >> 1;
     int ln = mid - l + 1, rn = r - mid;
     down(p, ln, rn);
-    if (jr <= mid)//全目标在线段树左边
+    if (jr <= mid)//目标全在该线段左边
         return query(jl, jr, l, mid, p << 1); // 这里是jr<=mid
-    if (jl > mid)//目标全在线段树右边
+    if (jl > mid)//目标全在该选段右边
         return query(jl, jr, mid + 1, r, p << 1 | 1); // jl>mid
-    //该区间完全覆盖目标区间
+    //目标区间小于该区间 并且 目标区间与该区间存在交集
     vector<int> l1 = query(jl, jr, l, mid, p << 1);
     vector<int> l2 = query(jl, jr, mid + 1, r, p << 1 | 1);
     //这是区间[jl,mid]和[mid+1,jr]的信息
     int llen = l1[0], lpre = l1[1], lsuf = l1[2];
     int rlen = l2[0], rpre = l2[1], rsuf = l2[2];
     //处理有关目标区间的三个信息
+    //因为不一定是该区间完全覆盖目标区间所以要去max和min********
     int len = max(max(llen, rlen), lsuf + rpre);//********
     int pre = llen < mid - max(l, jl) + 1 ? lpre : (llen + rpre);//*********
     int suf = rlen < min(jr, r) - mid ? rsuf : (lsuf + rlen);//******
