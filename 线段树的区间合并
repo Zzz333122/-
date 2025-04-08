@@ -176,7 +176,23 @@ void reverse(int jl, int jr, int l, int r, int p)
         reverse(jl, jr, mid + 1, r, p << 1 | 1);
     up(p, mid - l + 1, r - mid);
 }
-
+//洛谷p2894
+int find(int l, int r, int p, int x)//查询是否右长度为x的区间
+{
+    if (len[p] < x)
+        return 0;
+    if (l == r)
+        return l;
+   
+    int mid = l + r >> 1;
+    down(p,mid-l+1,r-mid);
+    int u = p << 1, v = p << 1 | 1;
+    if (len[u] >= x)
+        return find(l, mid, u, x);
+    if (suf[u] + pre[v] >= x)//返回主要靠这边
+        return mid - suf[u] + 1;
+    return find(mid + 1, r, v, x);
+}
 signed main()
 {
     cin >> n >> m;
