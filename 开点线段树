@@ -1,0 +1,105 @@
+//开点线段树 洛谷p2871
+//用到哪一部分就开哪一部分
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 8e4 + 100;
+int tr[N];
+int lz[N];
+int idx = 1;//用来增加空间
+int lp[N], rp[N];//左儿子和右儿子
+void up(int p,int u,int v)
+{
+    tr[p] = tr[u] + tr[v];
+}
+void lazy(int p, int n, int c)
+{
+    tr[p] += n * c;
+    lz[p] += c;
+}
+void down(int p, int ln, int rn)
+{
+    if (lz[p])//下发lz时，如果左右儿子没有 只能增加了
+    {
+        if (lp[p] == 0)
+        {
+            lp[p] = ++idx;
+        }
+        if (rp[p] == 0)
+        {
+            rp[p] = ++idx;
+        }
+        lazy(lp[p], ln, lz[p]);
+        lazy(rp[p], rn, lz[p]);
+        lz[p] = 0;
+    }
+}
+void add(int jl, int jr, int l, int r, int p, int c)
+{
+    if (jl <= l && r <= jr)
+    {
+        lazy(p, r - l + 1, c);
+        return;
+    }
+    int mid = l + r >> 1;
+    down(p, mid-l+1, r - mid);
+    //用到哪一部分 哪一部分没有就增加
+    if (jl <= mid)
+    {
+        if (lp[p] == 0)
+        {
+            lp[p] = ++idx;
+        }
+        add(jl, jr, l, mid, lp[p], c);
+    }
+    if (jr > mid)
+    {
+        if (rp[p] == 0)
+        {
+            rp[p] = ++idx;
+        }
+        add(jl, jr, mid + 1, r, rp[p], c);
+    }
+    up(p,lp[p],rp[p]);
+}
+int query(int jl, int jr, int l, int r, int p)
+{
+    if (jl <= l && r <= jr)
+    {
+        return tr[p];
+    }
+    int res = 0;
+    int mid = l + r >> 1;
+    down(p, mid - l + 1, r - mid);
+    //用到哪一部分 且哪一部分被开出来过 才对答案有贡献
+    if (jl<=mid && lp[p])
+    {
+        res += query(jl, jr, l, mid, lp[p]);
+    }
+    if (jr>mid && rp[p])
+    {
+        res += query(jl, jr, mid + 1, r, rp[p]);
+    }
+    return res;
+}
+int n, m;
+signed main()
+{
+    cin >> n >> m;
+    while (m--)
+    {
+        int op, l, r, x;
+        cin >> op >> l >> r;
+        if (op == 1)
+        {
+            cin >> x;
+            add(l, r, 1, n, 1, x);
+        }
+        else
+        {
+            cout << query(l, r, 1, n, 1) << endl;
+        }
+    }
+
+    return 0;
+}
