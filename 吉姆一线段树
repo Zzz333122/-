@@ -1,0 +1,240 @@
+//吉姆一线段树的三种操作(无区间增加的操作)
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long 
+const int N=8e5+100,INF=1e9;//若smx=-INF代表该区间无次大值，即该区间的元素都相同，并且该子树没有标签了
+int sum[N];//维护累加和
+int mx[N];//维护最大值
+int sem[N];//维护次大值
+int mmx[N];//维护最大值的个数
+int arr[N/4];
+void lazy(int p,int c)
+{
+    if(c<mx[p])//只有c小于max时才进行更新
+    {
+        sum[p]+=(mx[p]-c)*mmx[p];//减去最大值和c的差值*最大值个数
+        mx[p]=c;//mx充当懒更新数组
+    }
+}
+void up(int p)
+{
+    int u=p<<1,v=p<<1|1;
+    sum[p]=sum[u]+sum[v];
+    mx[p]=max(mx[u],mx[v]);
+    if(mx[u]>mx[v])
+    {
+        mmx[p]=mmx[u];
+        sem[p]=max(sem[u],mx[v]);
+    }
+    else if(mx[u]<mx[v])
+    {
+        mmx[p]=mmx[v];
+        sem[p]=max(mx[u],sem[v]);
+    }
+    else 
+    {
+        mmx[p]=mmx[u]+mmx[v];
+        sem[p]=max(sem[u],sem[v]);
+    }
+}
+void down(int p)
+{
+    lazy(p<<1,mx[p]);
+    lazy(p<<1|1,mx[p]);
+}
+//最难最核心的地方
+void upd(int jl,int jr,int l,int r,int p,int c)//将区间[jl,jr]的值v改为min(v,x)
+{
+    if(c>=mx[p]) //剪枝1：如果c>=max，就无需在进行更新
+    {
+        return;
+    }
+    if(jl<=l && r<=jr && sem[p]>c)//剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
+    {
+        lazy(p,c);
+        return;
+    }
+    //若c<sem,开始“暴力”
+    down(p);//躲不掉了就只能下发懒更新
+    //躲不掉有两个原因:1.该区间没有被任务区间全包 2.c<=sem
+    int mid=l+r>>1;
+    if(jl<=mid) upd(jl,jr,l,mid,p<<1,c);
+    if(jr>mid) upd(jl,jr,mid+1,r,p<<1|1,c);
+    up(p);
+    return;     
+}
+void build(int l,int r,int p)
+{
+    if(l==r)
+    {
+        sum[p]=mx[p]=arr[l];
+        sem[p]=-INF;
+        mmx[p]=1;
+        return;
+    }
+    int mid=l+r>>1;
+    build(l,mid,p<<1);
+    build(mid+1,r,p<<1|1);
+    up(p);
+}
+int getsum(int jl,int jr,int l,int r,int p)
+{
+    if(jl<=l && r<=jr)
+    {
+        return sum[p];
+    }
+    int mid=l+r>>1;
+    down(p);
+    int res=0;
+    if(jl<=mid) res+=getsum(jl,jr,l,mid,p<<1);
+    if(jr>mid) res+=getsum(jl,jr,mid+1,r,p<<1|1);
+    return res;
+}
+int getmax(int jl,int jr,int l,int r,int p)
+{
+    if(jl<=l && r<=jr)
+    {
+        return mx[p];
+    }
+    int mid=l+r>>1;
+    down(p);
+    int mx=0;
+    if(jl<=mid) mx=max(mx,getmax(jl,jr,l,mid,p<<1));
+    if(jr>mid) mx=max(mx,getsum(jl,jr,mid+1,r,p<<1|1));
+    return mx;
+}
+//````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
+//吉姆一线段树四种操作(有add操作)
+#include<bits/stdc++.h>
+using namespace std;
+#define int long long 
+const int N=8e5+100,INF=1e9;//若smx=-INF代表该区间无次大值，即该区间的元素都相同，并且该子树没有标签了
+int sum[N];//维护累加和
+int mx[N];//维护最大值,只维护最大值不再是懒更新信息
+int sem[N];//维护次大值
+int mmx[N];//维护最大值的个数
+int arr[N/4];
+
+int mxadd[N];//最大值的增加值
+int othadd[N];//其他值的增加值
+//这俩个最为懒更新信息
+//```````````````````````````````````````````
+// void lazy(int p,int c)
+// {
+//     if(c<mx[p])//只有c小于max时才进行更新
+//     {
+//         sum[p]+=(mx[p]-c)*mmx[p];//减去最大值和c的差值*最大值个数
+//         mx[p]=c;//mx充当懒更新数组
+//     }
+// }
+//``````````````````````````````````````
+
+void lazy(int p,int n,int maxv,int othv)//新的懒更新 最后两个传参分别是max要增加的值和其他数要增加的值
+{                                       //把setmin和add的lazy合二为一
+    sum[p]+=mxv*mmx[p]+othv*(n-mmx[p]);
+    mx[p]+=mxv;
+    srm+=(sem == -INF ? 0 : othv);
+    mxadd[p]+=maxv;
+    othadd[p]+=othv;
+}
+void up(int p)
+{
+    int u=p<<1,v=p<<1|1;
+    sum[p]=sum[u]+sum[v];
+    mx[p]=max(mx[u],mx[v]);
+    if(mx[u]>mx[v])
+    {
+        mmx[p]=mmx[u];
+        sem[p]=max(sem[u],mx[v]);
+    }
+    else if(mx[u]<mx[v])
+    {
+        mmx[p]=mmx[v];
+        sem[p]=max(mx[u],sem[v]);
+    }
+    else 
+    {
+        mmx[p]=mmx[u]+mmx[v];
+        sem[p]=max(sem[u],sem[v]);
+    }
+}
+void down(int p)
+{
+    lazy(p<<1,mx[p]);
+    lazy(p<<1|1,mx[p]);
+}
+//最难最核心的地方
+void upd(int jl,int jr,int l,int r,int p,int c)//将区间[jl,jr]的值v改为min(v,x)
+{
+    if(c>=mx[p]) //剪枝1：如果c>=max，就无需在进行更新
+    {
+        return;
+    }
+    if(jl<=l && r<=jr && sem[p]>c)//剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
+    {
+        lazy(p,r-l+1,c-mx[p],0);//只需最大值改变，其他值无需变化
+        return;
+    }
+    //若c<sem,开始“暴力”
+    down(p);//躲不掉了就只能下发懒更新
+    //躲不掉有两个原因:1.该区间没有被任务区间全包 2.c<=sem
+    int mid=l+r>>1;
+    if(jl<=mid) upd(jl,jr,l,mid,p<<1,c);
+    if(jr>mid) upd(jl,jr,mid+1,r,p<<1|1,c);
+    up(p);
+    return;     
+}
+void add(int jl,int jr,int l,int r,int p,int c)
+{
+    if(jl<=l && r<=jr)
+    {
+        lazy(p,r-l+1,c,c);//add是范围内所有都增加 所以max和其他都是c
+        return;
+    }
+    int mid=l+r>>1;
+    down(p);
+    if(jl<=mid) add(jl,jr,l,mid,p<<1,c);
+    if(jr>mid) add(jl,jr,mid+1,r,p<<1|1,c);
+    up(p); 
+}  
+void build(int l,int r,int p)
+{
+    if(l==r)
+    {
+        sum[p]=mx[p]=arr[l];
+        sem[p]=-INF;
+        mmx[p]=1;
+        return;
+    }
+    int mid=l+r>>1;
+    build(l,mid,p<<1);
+    build(mid+1,r,p<<1|1);
+    up(p);
+}
+int getsum(int jl,int jr,int l,int r,int p)
+{
+    if(jl<=l && r<=jr)
+    {
+        return sum[p];
+    }
+    int mid=l+r>>1;
+    down(p);
+    int res=0;
+    if(jl<=mid) res+=getsum(jl,jr,l,mid,p<<1);
+    if(jr>mid) res+=getsum(jl,jr,mid+1,r,p<<1|1);
+    return res;
+}
+int getmax(int jl,int jr,int l,int r,int p)
+{
+    if(jl<=l && r<=jr)
+    {
+        return mx[p];
+    }
+    int mid=l+r>>1;
+    down(p);
+    int mx=0;
+    if(jl<=mid) mx=max(mx,getmax(jl,jr,l,mid,p<<1));
+    if(jr>mid) mx=max(mx,getsum(jl,jr,mid+1,r,p<<1|1));
+    return mx;
+}
+
