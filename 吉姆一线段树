@@ -49,7 +49,7 @@ void upd(int jl,int jr,int l,int r,int p,int c)//将区间[jl,jr]的值v改为mi
     {
         return;
     }
-    if(jl<=l && r<=jr && sem[p]>c)//剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
+    if(jl<=l && r<=jr && sem[p]<c)//剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
     {
         lazy(p,c);
         return;
@@ -170,7 +170,7 @@ void upd(int jl,int jr,int l,int r,int p,int c)//将区间[jl,jr]的值v改为mi
     {
         return;
     }
-    if(jl<=l && r<=jr && sem[p]>c)//剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
+    if(jl<=l && r<=jr && sem[p]<c)//剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
     {
         lazy(p,r-l+1,c-mx[p],0);//只需最大值改变，其他值无需变化
         return;
@@ -242,69 +242,114 @@ int getmax(int jl,int jr,int l,int r,int p)
 #include <bits/stdc++.h>
 using namespace std;
 #define int long long
-const int N = 8e5 + 100, INF = 1e9; // 若smx=-INF代表该区间无次大值，即该区间的元素都相同，并且该子树没有标签了
+const int N = 8e6 + 100, INF = 1e18; // 若smx=-INF代表该区间无次大值，即该区间的元素都相同，并且该子树没有标签了
 int sum[N];                         // 维护累加和
 int mx[N];                          // 维护最大值,只维护最大值不再是懒更新信息
 int sem[N];                         // 维护次大值
 int mmx[N];                         // 维护最大值的个数
 int arr[N / 4];
 
-int mxadd[N];                               // 最大值的增加值
-int othadd[N];                              // 其他值的增加值
-int mxhs[N];                                // 历史最大值
-int mxaddtop[N];                            // 在历史增加中 max所增加的最大数是多少
-int othaddtop[N];                           // 在历史增加中 其他数所增加的最大数是多少
-void lazy(int p, int n, int maxv, int othv) // 新的懒更新 最后两个传参分别是max要增加的值和其他数要增加的值
-{                                           // 把setmin和add的lazy合二为一
-    sum[p] += mxv * mmx[p] + othv * (n - mmx[p]);
-    mx[p] += mxv;
-    sem[p] += (sem[p] == -INF ? 0 : othv);
-    mxadd[p] += maxv;
-    othadd[p] += othv;
-}
+int maxadd[N];    // 最大值的增加值
+int othadd[N];    // 其他值的增加值
+int hmx[N];       // 历史最大值
+int maxaddtop[N]; // 在历史增加中 max所增加的最大数是多少
+int othaddtop[N]; // 在历史增加中 其他数所增加的最大数是多少
+
 void up(int p)
 {
     int u = p << 1, v = p << 1 | 1;
-    sum[p] = sum[u] + sum[v];
-    mx[p] = max(mx[u], mx[v]);
-    if (mx[u] > mx[v])
+    hmx[p] = max(hmx[u], hmx[v]); // 历史最大值汇总
+    sum[p] = sum[u] + sum[v];     // 累加和汇总
+    mx[p] = max(mx[u], mx[v]);    // 最大值汇总
+
+    if (mx[u] > mx[v]) // 最大值在左儿子这边
     {
-        mmx[p] = mmx[u];
+        mmx[p] = mmx[u]; // 最大值为左儿子这边max的数量
         sem[p] = max(sem[u], mx[v]);
     }
-    else if (mx[u] < mx[v])
+    else if (mx[u] < mx[v]) // 最大值在右儿子这边
     {
         mmx[p] = mmx[v];
         sem[p] = max(mx[u], sem[v]);
     }
-    else
+    else // 左右儿子都有最大值
     {
-        mmx[p] = mmx[u] + mmx[v];
+        mmx[p] = mmx[u] + mmx[v]; // 数量就等于两边数量相加
         sem[p] = max(sem[u], sem[v]);
     }
 }
+
+void lazy(int p, int n, int maxv, int othv, int maxupv, int othupv) // maxv和othv是最大值和其他值加多少
+{                                                                   // maxupv和othupv为最大值和其他值的最大提升幅度
+    hmx[p] = max(hmx[p], mx[p] + maxupv);                           // 和 当前最大值+最大值最大增加值作比较
+    maxaddtop[p] = max(maxaddtop[p], maxadd[p] + maxupv);           // 和 当前最大值增加值+最大值最大增加值比较
+    othaddtop[p] = max(othaddtop[p], othadd[p] + othupv);           // 和 当前其他值增加值+其他值最大增加值比较
+    // 要先更新以上三个
+
+    sum[p] += maxv * mmx[p] + othv * (n - mmx[p]); // 累加和加上最大值增加的部分和其他值增加的部分
+    mx[p] += maxv;                                 // 最大值加上增加的值
+    sem[p] += (sem[p] == -INF ? 0 : othv);         // 若存在次大值，就给次大值增加othv
+    maxadd[p] += maxv;                             // 懒标记更新
+    othadd[p] += othv;                             // 懒标记更新
+}
+
 void down(int p, int ln, int rn)
 {
     int u = p << 1, v = p << 1 | 1;
-    int tmp = max(mx[u], mx[v]);
-    if (mx[u] == tmp) // 如果左侧有最大值，就要更新左侧的最大值
+    int tmp = max(mx[u], mx[v]); // 注意:这里不是用p的最大值去比较，而是用左右儿子的最大值，因为p的最大值可能早就改变了，
+                                 // 比较应该拿着原来的最大值去比较，而原来的最大值就在左右孩子最大值中
+    if (mx[u] == tmp)            // 如果左侧有最大值，就要更新左侧的最大值
     {
-        lazy(u, ln, mxadd[p], othadd[p]);
+        lazy(u, ln, maxadd[p], othadd[p], maxaddtop[p], othaddtop[p]);
     }
     else // 如果左侧没有最大值，就把左侧的最大值当作其他值处理
     {
-        lazy(u, ln, othadd[p], othadd[p]);
+        lazy(u, ln, othadd[p], othadd[p], othaddtop[p], othaddtop[p]);
     }
     // 右侧同理
     if (mx[v] == tmp)
     {
-        lazy(v, rn, mxadd[p], othadd[p]);
+        lazy(v, rn, maxadd[p], othadd[p], maxaddtop[p], othaddtop[p]);
     }
     else
     {
-        lazy(v, rn, mxadd[p], othadd[p]);
+        lazy(v, rn, othadd[p], othadd[p], othaddtop[p], othaddtop[p]);
     }
-    mxadd[p] = othadd[p] = 0;
+    maxadd[p] = othadd[p] = maxaddtop[p] = othaddtop[p] = 0; // 都要清除为0
+}
+
+void build(int l, int r, int p)
+{
+    if (l == r)
+    {
+        sum[p] = mx[p] = hmx[p] = arr[l];
+        sem[p] = -INF;
+        mmx[p] = 1;
+    }
+    else
+    {
+
+        int mid = l + r >> 1;
+        build(l, mid, p << 1);
+        build(mid + 1, r, p << 1 | 1);
+        up(p);
+    }
+    maxadd[p] = othadd[p] = maxaddtop[p] = othaddtop[p] = 0;
+}
+void add(int jl, int jr, int l, int r, int p, int c)
+{
+    if (jl <= l && r <= jr)
+    {
+        lazy(p, r - l + 1, c, c, c, c); // add是范围内所有都增加 所以max和其他都是c
+        return;
+    }
+    int mid = l + r >> 1;
+    down(p, mid - l + 1, r - mid);
+    if (jl <= mid)
+        add(jl, jr, l, mid, p << 1, c);
+    if (jr > mid)
+        add(jl, jr, mid + 1, r, p << 1 | 1, c);
+    up(p);
 }
 // 最难最核心的地方
 void upd(int jl, int jr, int l, int r, int p, int c) // 将区间[jl,jr]的值v改为min(v,x)
@@ -313,9 +358,9 @@ void upd(int jl, int jr, int l, int r, int p, int c) // 将区间[jl,jr]的值v�
     {
         return;
     }
-    if (jl <= l && r <= jr && sem[p] > c) // 剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
+    if (jl <= l && r <= jr && sem[p] < c) // 剪枝2：如果c在区间(sem,max],则只需要用当前的max作为懒更新，懒住c，
     {
-        lazy(p, r - l + 1, c - mx[p], 0); // 只需最大值改变，其他值无需变化
+        lazy(p, r - l + 1, c - mx[p], 0, c - mx[p], 0); // 只需最大值改变，其他值无需变化
         return;
     }
     // 若c<sem,开始“暴力”
@@ -330,35 +375,7 @@ void upd(int jl, int jr, int l, int r, int p, int c) // 将区间[jl,jr]的值v�
     up(p);
     return;
 }
-void add(int jl, int jr, int l, int r, int p, int c)
-{
-    if (jl <= l && r <= jr)
-    {
-        lazy(p, r - l + 1, c, c); // add是范围内所有都增加 所以max和其他都是c
-        return;
-    }
-    int mid = l + r >> 1;
-    down(p, mid - l + 1, r - mid);
-    if (jl <= mid)
-        add(jl, jr, l, mid, p << 1, c);
-    if (jr > mid)
-        add(jl, jr, mid + 1, r, p << 1 | 1, c);
-    up(p);
-}
-void build(int l, int r, int p)
-{
-    if (l == r)
-    {
-        sum[p] = mx[p] = arr[l];
-        sem[p] = -INF;
-        mmx[p] = 1;
-        return;
-    }
-    int mid = l + r >> 1;
-    build(l, mid, p << 1);
-    build(mid + 1, r, p << 1 | 1);
-    up(p);
-}
+
 int getsum(int jl, int jr, int l, int r, int p)
 {
     if (jl <= l && r <= jr)
@@ -382,11 +399,65 @@ int getmax(int jl, int jr, int l, int r, int p)
     }
     int mid = l + r >> 1;
     down(p, mid - l + 1, r - mid);
-    int mx = 0;
+    int mx = -INF;
     if (jl <= mid)
         mx = max(mx, getmax(jl, jr, l, mid, p << 1));
     if (jr > mid)
         mx = max(mx, getmax(jl, jr, mid + 1, r, p << 1 | 1));
     return mx;
 }
+int gethmax(int jl, int jr, int l, int r, int p) // 查询历史最大值 和查询最大值逻辑一样
+{
+    if (jl <= l && r <= jr)
+    {
+        return hmx[p];
+    }
+    int mid = l + r >> 1;
+    down(p, mid - l + 1, r - mid);
+    int mx = -INF;
+    if (jl <= mid)
+        mx = max(gethmax(jl, jr, l, mid, p << 1), mx);
+    if (jr > mid)
+        mx = max(mx, gethmax(jl, jr, mid + 1, r, p << 1 | 1));
+    return mx;
+}
+int n, m;
+signed main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    cin >> n >> m;
+    for (int i = 1; i <= n; i++)
+        cin >> arr[i];
+    build(1, n, 1);
+    while (m--)
+    {
+        int op, l, r, x;
+        cin >> op >> l >> r;
+        if (op == 1)
+        {
+            cin >> x;
+            add(l, r, 1, n, 1, x);
+        }
+        else if (op == 2)
+        {
+            cin >> x;
+            upd(l, r, 1, n, 1, x);
+        }
+        else if (op == 3)
+        {
+            cout << getsum(l, r, 1, n, 1) << endl;
+        }
+        else if (op == 4)
+        {
+            cout << getmax(l, r, 1, n, 1) << endl;
+        }
+        else if (op == 5)
+        {
+            cout << gethmax(l, r, 1, n, 1) << endl;
+        }
+    }
 
+    return 0;
+}
