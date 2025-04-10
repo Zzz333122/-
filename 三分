@@ -1,0 +1,18 @@
+//浮点数三分---------------------------------------------------------------------------------------------------------------------
+while (fabs(r - l) > 1e-9)				//三分 
+{
+	double mid1 = (l + r) / 2, mid2 = (mid1 + r) / 2;
+	if (clac(mid1) > clac(mid2))	l = mid1;
+	else						r = mid2;
+}
+
+//整数三分---------------------------------------------------------------------------------------------------------
+int l = all[1], r = all[len];
+int ans = 0x3f3f3f3f3f3f3f;
+while (l <= r)
+{
+	int midl = (2 * l + r) / 3;
+	int  midr = (l + 2 * r) / 3;
+	if (check(midl) >= check(midr)) l = midl + 1, ans = min(check(midr), ans);
+	else r = midr - 1, ans = min(check(midl), ans);
+}
