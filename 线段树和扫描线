@@ -1,0 +1,117 @@
+//矩阵面积并 p5490
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 2e5 + 100;
+struct node
+{
+    int x, y, xx, yy; // 左下 右上
+} arr[N];
+int len[N * 4]; // 线段树维护总的区间长度 ex:1是维护1~2的区间长度，所以要查询l~r的区间长度其实要把r-1，因此要最后给数组补一个末尾位置
+int cv[N * 4];  // 区间覆盖长度
+int cs[N * 4];  // 区间覆盖次数
+// 不需要懒更新因为每一个-1操作 前面都对应一个相应的+1操作不需要父亲推下来
+int n;
+vector<int> Y;//用来离散y坐标
+struct nodee
+{
+    int x, y, yy, op;///存储扫描线用的数组
+    bool operator<(const nodee &a) const
+    {
+        return x < a.x;
+    }
+};
+vector<nodee> line;//扫描线
+void up(int p, int l, int r)
+{
+    if (cs[p] > 0)//如果cs大于0 cv[p]=len[p];
+    {
+        cv[p] = len[p];
+    }
+    else
+    {
+        if (l == r)//如果cs等于0 并且l==r覆盖为0
+            cv[p] = 0;
+        else//如果l！= r 就为左儿子和右儿子相加
+            cv[p] = cv[p << 1] + cv[p << 1 | 1];
+    }
+}
+void build(int l, int r, int p)
+{
+    if (l == r)
+    {
+        len[p] = Y[l + 1] - Y[l];
+        cv[p] = cs[p] = 0;
+        return;
+    }
+    int mid = l + r >> 1;
+    build(l, mid, p << 1);
+    build(mid + 1, r, p << 1 | 1);
+    len[p] = len[p << 1] + len[p << 1 | 1];
+    up(p, l, r);
+}
+void add(int jl, int jr, int l, int r, int p, int c)
+{
+    if (jl <= l && r <= jr)
+    {
+        cs[p] += c;
+        up(p, l, r);
+        return;
+    }
+    int mid = l + r >> 1;
+    if (jl <= mid)
+        add(jl, jr, l, mid, p << 1, c);
+    if (jr > mid)
+        add(jl, jr, mid + 1, r, p << 1 | 1, c);
+    up(p, l, r);
+}
+int get(int y)
+{
+    return lower_bound(Y.begin(), Y.end(), y) - Y.begin();
+}
+
+signed main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        int x, y, xx, yy;
+        cin >> x >> y >> xx >> yy;
+        arr[i] = {x, y, xx, yy};
+        Y.push_back(y);
+        Y.push_back(yy);
+        line.push_back({x, y, yy, 1});
+        line.push_back({xx, y, yy, -1});
+    }
+    
+    Y.push_back(-1);
+    sort(Y.begin(), Y.end());
+    Y.erase(unique(Y.begin(), Y.end()), Y.end());
+    //Y.push_back(*(Y.end() - 1));//因为[l,r]对应线段树的[l,r-1]，所以多加一个防止越界 //其实加不加都可以
+    sort(line.begin(), line.end());
+
+    int m = Y.size() - 1;//线段树的右边界
+    
+    build(1, m, 1);
+    
+
+    int sum = 0;
+    int now = 0;
+    int tmp = 0;
+    for (int i = 0; i < line.size(); i++)//开始扫描线
+    {
+        tmp = now;
+        now = line[i].x;
+        sum += (now - tmp) * cv[1];//每次边界替换都要结算面积
+        int y = get(line[i].y);
+        int yy = get(line[i].yy) - 1;
+
+        add(y, yy, 1, m, 1, line[i].op);
+    }
+    cout << sum << endl;
+
+    return 0;
+}
