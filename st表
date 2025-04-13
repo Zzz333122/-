@@ -1,0 +1,80 @@
+//st表   洛谷p4155  ----------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 5e5 + 1000;
+int arr[N];
+int n, m;
+struct node
+{
+    int id, l, r;
+    bool operator<(const node &a) const
+    {
+        return l < a.l;
+    }
+} all[N];
+int f[N];
+int ans[N];
+int p = 0;
+int jump(vector<vector<int>> &st, int i)
+{
+    int aim = all[i].l + m, now = i, ne = 0, res = 1;//因为要覆盖所有区域 所以aim为all[i].l+m
+    for (int i = p; i >= 0; i--)
+    {
+        ne = st[now][i];
+        if (ne && all[ne].r < aim)
+        {
+            res += (1 << i);
+            now = ne;
+        }
+    }
+    return res + 1;
+}
+
+signed main()
+{
+    cin >> n >> m;
+    for (int i = 1; i <= n; i++)
+    {
+        int l, r;
+        cin >> l >> r;
+        all[i] = {i, l, r};
+    }
+    sort(all + 1, all + 1 + n); // 以左端点小的排序
+    for (int i = 1; i <= n; i++)
+    {
+        if (all[i].l > all[i].r) // 破环为链
+            all[i].r += m;
+    }
+    for (int i = 1; i <= n; i++)
+    {
+        all[i + n] = all[i]; // 将新的链加上区间
+        all[i + n].l += m;
+        all[i + n].r += m;
+    }
+    p = log2(n); // st表的大小
+    vector<vector<int>> st(n * 2 + 1, vector<int>(p + 1));
+    n = n * 2;
+    for (int i = 1, j = 1; i <= n; i++)
+    {
+        while (j + 1 <= n && all[j + 1].l <= all[i].r) // 找到左端点最靠近该点最右侧的点 就是该点一步的距离
+            j++;
+        st[i][0] = j;
+    }
+    //st表的构建********************
+    for (int i = 1; i <= p; i++)//走1<<p步
+    {
+        for (int j = 1; j <= n; j++)//每个点
+        {
+            st[j][i] = st[st[j][i - 1]][i - 1];//转移方程 该点走1<<i步最远就是这个点走1<<(i-1)步走到的点 再走1<<(i-1)
+        }
+    }
+    for (int i = 1; i <= n / 2; i++)
+    {
+        ans[all[i].id] = jump(st, i);
+    }
+    for (int i = 1; i <= n / 2; i++)
+        cout << ans[i] << ' ';
+
+    return 0;
+}
