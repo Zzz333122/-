@@ -99,30 +99,36 @@ int main()
 
     return 0;
 }
-//利用其他节点到重心的距离和最小求解 树上DP
+//利用其他节点到重心的距离和最小求解 树上DP (有点权有边权）
+//若无点权无边权只需要把这里的点权和边权换成1即可
 #include <iostream>
 #include <vector>
 #include <algorithm>
 using namespace std;
-
-const int N = 300, INF = 1e8;
+#define int long long 
+const int N = 1e6, INF = 1e18;
 int n;
-vector<int> g[N];
+struct node
+{
+    int v, w;//边权不影响重心的求解
+};
+vector<node> g[N];
 int ans = INF;
 int ct;
-int sz[N]; // 以u为节点子树的大小
-int f[N];  // dp
-int w[N];//如果节点无权值W相当于为1
-void dfs(int u, int p, int dep)//注意这里的根节点dep为0
+int sz[N];                      // 以u为节点子树的大小
+int f[N];                       // dp
+int w[N];                       // 如果节点无权值W相当于为1
+void dfs(int u, int p, int dep) // 注意这里的根节点dep为0
 {
-    sz[u] = w[u];
+    sz[u] = w[u];//原先的sz[u]=1 因为有点权的存在改为=w[u]
 
     for (int i = 0; i < g[u].size(); i++)
     {
-        int v = g[u][i];
+        int v = g[u][i].v;
         if (v == p || v == 0)
             continue;
-        dfs(v, u, dep + 1);
+        dfs(v, u, dep + g[u][i].w);//因为有边权的存在不再是dep+1而是+边权
+
         sz[u] += sz[v];
     }
     f[1] += dep * w[u];
@@ -133,13 +139,14 @@ void dp(int u, int p)
 
     for (int i = 0; i < g[u].size(); i++)
     {
-        int v = g[u][i];
+        int v = g[u][i].v;
+        int w = g[u][i].w;
         if (v == p || v == 0)
             continue;
-        f[v] = f[u] + sz[1] - sz[v] - sz[v];
+        f[v] = f[u] + (sz[1] - sz[v] * 2) * w;//因为有边权的存在 所以要乘u~v之间的距离
         dp(v, u);
     }
-   
+
     if (f[u] < ans)
     {
         ans = f[u];
@@ -147,24 +154,27 @@ void dp(int u, int p)
     }
     return;
 }
-int main()
+signed main()
 {
     ios::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
     cin >> n;
-    for(int i=1;i<=n;i++) cin>>w[i];
+    for (int i = 1; i <= n; i++)
+        cin >> w[i];
     for (int i = 1; i < n; i++)
     {
-        int u,v;
+        int u, v, w;
         cin >> u >> v;
-        g[u].push_back(v);
-        g[v].push_back(u);
-
+        cin >> w;
+        g[u].push_back({v, w});
+        g[v].push_back({u, w});
     }
     dfs(1, 0, 0);
     dp(1, 0);
-   
-    cout << ct<<' '<<ans << endl;
+    // for (int i = 1; i <= n; i++)
+    //     cout << f[i] << ' ';
+    // cout << endl;
+    cout << ans << endl;
     return 0;
 }
