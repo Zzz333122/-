@@ -1,0 +1,170 @@
+//利用最大子树的节点最小求解重心
+#include<iostream>
+#include<vector>
+using namespace std;
+#define int long long 
+const int N=2e5+100;
+int n;
+vector<int> g[N];
+int ct,ans;
+int sz[N];//以u为节点子树的大小
+
+void dfs(int u,int p)
+{
+    sz[u]=1;
+    int res=0;
+    for(int i=0;i<g[u].size();i++)
+    {
+        int v=g[u][i];
+        if(v==p) continue;
+        dfs(v,u);
+        res=max(res,sz[v]);
+        sz[u]+=sz[v];
+    }
+    res=max(res,n-sz[u]);
+    if(res < ans || (res==ans && u<ct))//寻找最大子树节点最少的点就是重心
+    {
+        u=ct;
+        res=ans;
+    }
+}
+
+
+signed main()
+{
+    cin>>n;
+    for(int i=1;i<n;i++)
+    {
+        int u,v;
+        cin>>u>>v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    dfs(1,0);
+    cout<<ct<<' '<<ans<<endl;
+
+
+    return 0;
+}
+//利用重心子树的最大节点数不超过总结点数的一半求解
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+const int N = 2e5 + 100;
+int n;
+vector<int> g[N];
+vector<int> ans;
+;          // 储存重心
+int sz[N]; // 以u为节点子树的大小
+
+void dfs(int u, int p)
+{
+    sz[u] = 1;
+    int res = 0;
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        int v = g[u][i];
+        if (v == p)
+            continue;
+        dfs(v, u);
+        sz[u] += sz[v];
+        res = max(res, sz[v]);
+    }
+    res = max(res, n - sz[u]);
+    if (res <= n / 2)
+    {
+        ans.push_back(u);
+    }
+}
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    cin >> n;
+    for (int i = 1; i < n; i++)
+    {
+        int u, v;
+        cin >> u >> v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    dfs(1, 0);
+    sort(ans.begin(), ans.end());
+    for (int i = 0; i < ans.size(); i++)
+        cout << ans[i] << ' ';
+
+    return 0;
+}
+//利用其他节点到重心的距离和最小求解 树上DP
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+const int N = 300, INF = 1e8;
+int n;
+vector<int> g[N];
+int ans = INF;
+int ct;
+int sz[N]; // 以u为节点子树的大小
+int f[N];  // dp
+int w[N];//如果节点无权值W相当于为1
+void dfs(int u, int p, int dep)//注意这里的根节点dep为0
+{
+    sz[u] = w[u];
+
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        int v = g[u][i];
+        if (v == p || v == 0)
+            continue;
+        dfs(v, u, dep + 1);
+        sz[u] += sz[v];
+    }
+    f[1] += dep * w[u];
+    return;
+}
+void dp(int u, int p)
+{
+
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        int v = g[u][i];
+        if (v == p || v == 0)
+            continue;
+        f[v] = f[u] + sz[1] - sz[v] - sz[v];
+        dp(v, u);
+    }
+   
+    if (f[u] < ans)
+    {
+        ans = f[u];
+        ct = u;
+    }
+    return;
+}
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    cin >> n;
+    for(int i=1;i<=n;i++) cin>>w[i];
+    for (int i = 1; i < n; i++)
+    {
+        int u,v;
+        cin >> u >> v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+
+    }
+    dfs(1, 0, 0);
+    dp(1, 0);
+   
+    cout << ct<<' '<<ans << endl;
+    return 0;
+}
