@@ -1,0 +1,94 @@
+//两次dfs求解树的直径（只能用于非负权边，但可以加工出其他信息
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 5e5 + 100;
+struct node
+{
+    int v, s;
+};
+vector<node> g[N];
+int dis[N];
+int ans = 0;
+int mx = 0;
+
+void dfs(int u, int p, int s)
+{
+    dis[u] = dis[p] + s;
+    if (dis[u] > mx)
+    {
+        mx = dis[u];
+        ans = u;
+    }
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        auto t = g[u][i];
+        if (t.v == p)
+            continue;
+        dfs(t.v, u, t.s);
+    }
+}
+int n;
+
+signed main()
+{
+    cin >> n;
+    for (int i = 1; i < n; i++)
+    {
+        int u, v,s;
+        cin >> u >> v>>s;
+        g[u].push_back({v, s});
+        g[v].push_back({u, s});
+    }
+    dfs(1, 0, 0);
+    int st = ans;
+    dfs(st, 0, 0);
+    cout << mx << endl;
+
+    return 0;
+}
+//树形dp求解树的直径（只能求直径长度不能预处理其他东西
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 5e5 + 100;
+int n, m;
+struct node
+{
+    int v, s;
+};
+vector<node> g[N];
+int dis[N];
+//int ans[N];
+int ans;
+void dfs(int u, int p)
+{
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        auto t = g[u][i];
+        if (t.v == p)
+            continue;
+        dfs(t.v, u);
+        ans = max(ans, dis[u] + dis[t.v] + t.s);
+        dis[u] = max(dis[u], dis[t.v] + t.s);
+    }
+}
+
+signed main()
+{
+    cin >> n;
+    for (int i = 1; i < n; i++)
+    {
+        int u, v, s;
+        cin >> u >> v >> s;
+        g[u].push_back({v, s});
+        g[v].push_back({u, s});
+    }
+    dfs(1, 0);
+    // int res = 0;
+    // for (int i = 1; i <= n; i++)
+    //     res = max(res, ans[i]);
+    // cout << res << ' ';
+    cout<<ans;
+    return 0;
+}
