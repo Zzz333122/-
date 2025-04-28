@@ -1,0 +1,248 @@
+//AC自动机（记录词频）（洛谷p5357）
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 2e5 + 1000;
+int ed[N];      // 记录每个目标串结尾的编号
+int son[N][26]; // trie树 且把传送门直接和tire树直接结合了
+int fail[N];    // fail指针
+int idx;
+int cnt[N];                   // 每个字符串的出现次数
+vector<int> g[N];             // 基于fail指针建反向图
+void insert(int id, string s) // 插入ac自动机
+{
+    int p = 0;
+    for (int i = 0; i < s.size(); i++)
+    {
+        int u = s[i] - 'a';
+        if (!son[p][u])
+            son[p][u] = ++idx;
+        p = son[p][u];
+    }
+    ed[id] = p; // 记录id为s的字符串结尾编号
+}
+// 建好tire树后开始设置fail指针
+// 过程是bfs
+void setfail() // 设置fail指针 以及设置直通表，做了ac自动机的固定优化
+{
+    queue<int> q;
+    for (int i = 0; i <= 25; i++)
+    {
+        if (son[0][i])
+        {
+            q.push(son[0][i]);
+        }
+    }
+    while (q.size())
+    {
+        int p = q.front();
+        q.pop();
+        for (int i = 0; i <= 25; i++)
+        {
+            int u = son[p][i];
+            if (u == 0) // 没有到i的路
+            {
+                son[p][i] = son[fail[p]][i]; // 更新传送门 传送到p的fail指针去i的位置
+            }
+            else // 如果有到i的路 不用改 只需改u的fail指针 而u的fail指针则是pfail指针要去i的位置
+            {
+                fail[u] = son[fail[p]][i];
+                q.push(u); // 加入队列作为下一层
+            }
+        }
+    }
+}
+void dfs(int u) // 汇总词频
+{
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        dfs(g[u][i]);
+        cnt[u] += cnt[g[u][i]];
+    }
+}
+
+signed main()
+{
+    string s;
+    int n;
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> s;
+        insert(i, s); // 插入每个字符串
+    }
+    setfail(); // 设置fail指针
+    string t;
+    cin >> t;
+    int p = 0;
+    for (int i = 0; i < t.size(); i++) // 处理文章
+    {
+        p = son[p][t[i] - 'a'];
+        cnt[p]++;
+    }
+    for (int i = 1; i <= idx; i++) // 建fail的反向图
+    {
+        int u = i;
+        int v = fail[u];
+        g[v].push_back(u);
+    }
+    dfs(0); // 汇总词频
+    for (int i = 1; i <= n; i++)
+    {
+        cout << cnt[ed[i]] << endl;
+    }
+    return 0;
+}
+//报警设置 p3311
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 1e6 + 100;
+bool alert[N];
+int mod = 1e9 + 7;
+int n;
+string s;
+string num;
+int son[N][10];
+int fail[N];
+int ed[N];
+int idx;
+// num[]={x,x,x,x}
+// i：来到的十进制位置 (上面num中的位置)
+// j:ac自动机来到的节点编号
+// fr：是不是0~9中可以随意选择了 fr=0不能随便选要考虑当数字大小
+// has:之前有没有选择过数字 has=0表示之前没选择过数字 =1表示之前选择过数字
+int f[2000][2000][2][2];
+int dp(int i, int j, int fr, int has) // 数位dp 返回选择从i出发选择数字的个数
+{
+    if (alert[j])
+        return 0; // 整个过程用到ac自动机的就这里
+
+    if (i == n)
+        return has; // 所有决定已经做完了
+    if (f[i][j][fr][has] != -1)
+        return f[i][j][fr][has]; // 记忆化
+    int ans = 0;
+    int cur = num[i] - '0';
+    if (has == 0)
+    {
+        if (fr == 0) // 分支1：之前没选择过数字 且 之前决策等于 num前缀 能来到这里说明i一定是0位置 cur一定不等于0
+        {
+            // 1：当前选择不要任何数字
+            ans = (ans + dp(i + 1, 0, 1, 0)) % mod;
+            // 2：当前选择比cur小的数字
+            for (int pk = 1; pk < cur; pk++) // 之前从没选过数 所以要从1开始
+            {
+                ans = (ans + dp(i + 1, son[j][pk], 1, 1)) % mod; // 因为选过数字了且选的数字比cur小 所以可以随便选了
+            }
+            // 3：选择cur这个数字
+            ans = (ans + dp(i + 1, son[j][cur], 0, 1)) % mod; // 选择的是cur接下来不能随便选了
+        }
+        else // 分支2：之前没有选择过数字但是 且 之前的决策小于num的前缀
+        {
+            // 当前选择不要数字
+            ans = (ans + dp(i + 1, 0, 1, 0)) % mod;
+            // 当权选择1-9
+            for (int pk = 1; pk <= 9; pk++)
+            {
+                ans = (ans + dp(i + 1, son[j][pk], 1, 1)) % mod;
+            }
+        }
+    }
+    else
+    {
+        if (fr == 0) // 分支3：之前选择过数字但是不能随意选 说明之前选择的是num的前缀
+        {
+            // 可以选0了 0-cur-1
+            for (int pk = 0; pk < cur; pk++)
+            {
+                ans = (ans + dp(i + 1, son[j][pk], 1, 1)) % mod;
+            }
+            // 选择cur
+            ans = (ans + dp(i + 1, son[j][cur], 0, 1)) % mod;
+        }
+        else // 分支4：之前选择过数字且能随意选说明之前选择的数小于num的前缀
+        {
+            // 选啥都行 0-9
+            for (int pk = 0; pk <= 9; pk++)
+            {
+                ans = (ans + dp(i + 1, son[j][pk], 1, 1)) % mod;
+            }
+        }
+    }
+    f[i][j][fr][has] = ans;
+    return ans;
+}
+
+void insert(int id, string s)
+{
+    int p = 0;
+    for (int i = 0; i < s.size(); i++)
+    {
+        int u = s[i] - '0';
+        if (!son[p][u])
+            son[p][u] = ++idx;
+        p = son[p][u];
+    }
+    ed[id] = p;
+    alert[p] = 1;//设置报警
+}
+void setfail()
+{
+    queue<int> q;
+    for (int i = 0; i <= 9; i++)
+    {
+        if (son[0][i])
+        {
+            q.push(son[0][i]);
+        }
+    }
+    while (q.size())
+    {
+        int p = q.front();
+        q.pop();
+        for (int i = 0; i <= 9; i++)
+        {
+            int u = son[p][i];
+            if (!u)
+            {
+                son[p][i] = son[fail[p]][i];
+            }
+            else
+            {
+                fail[u] = son[fail[p]][i];
+                q.push(u);
+            }
+        }
+        alert[p] |= alert[fail[p]];//报警转移
+    }
+}
+
+signed main()
+{
+    cin >> num;
+    n = num.size();
+    int m;
+    cin >> m;
+    for (int i = 1; i <= m; i++)
+    {
+        string s;
+        cin >> s;
+        insert(i, s);
+    }
+    setfail();
+    //  int dp;
+    for (int i = 0; i <= n; i++)
+    {
+        for (int j = 0; j <= idx; j++)
+        {
+            f[i][j][0][0] = -1;
+            f[i][j][0][1] = -1;
+            f[i][j][1][0] = -1;
+            f[i][j][1][1] = -1;
+        }
+    }
+    cout << (dp(0, 0, 0, 0) % mod);
+
+    return 0;
+}
