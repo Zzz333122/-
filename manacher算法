@@ -1,0 +1,44 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 2e5 + 10;
+
+string s;
+int p[N];
+void manacher()
+{
+    string t;
+    t.push_back('#');
+    for (int i = 0; i < s.size(); i++) // 构建虚拟字符串
+    {
+      t.push_back(s[i]);
+      t.push_back('#');
+    }
+  
+    int mx = 0; // 记录最长回文子串长度
+    // len是以i为中心扩出来回文半径
+    for (int i = 0, c = 0, r = 0, len = 0; i < t.size(); i++)
+    {
+        len = r > i ? min(p[2 * c - i], r - i) : 1;
+        while (i - len >= 0 && i + len < t.size() && t[i + len] == t[i - len])
+            len++;
+        if (len + i > r)
+        {
+            r = len + i;
+            c = i;
+        }
+        mx = max(mx, len);
+        p[i] = len;
+    }
+    cout << mx - 1 << endl;
+}
+
+int main()
+{
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+    cout.tie(0);
+    cin >> s;
+    manacher();
+    return 0;
+}
