@@ -14,13 +14,13 @@ void manacher()
       t.push_back(s[i]);
       t.push_back('#');
     }
-  
+    t=' '+t;
     int mx = 0; // 记录最长回文子串长度
     // len是以i为中心扩出来回文半径
-    for (int i = 0, c = 0, r = 0, len = 0; i < t.size(); i++)
+    for (int i = 1, c = 1, r = 1, len = 0; i < t.size(); i++)
     {
         len = r > i ? min(p[2 * c - i], r - i) : 1;
-        while (i - len >= 0 && i + len < t.size() && t[i + len] == t[i - len])
+        while (i - len >= 1 && i + len < t.size() && t[i + len] == t[i - len])
             len++;
         if (len + i > r)
         {
