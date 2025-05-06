@@ -6,6 +6,7 @@ const int N = 2e5 + 1000;
 int ed[N];      // 记录每个目标串结尾的编号
 int son[N][26]; // trie树 且把传送门直接和tire树直接结合了
 int fail[N];    // fail指针
+//fail指针的含义:当前节点所代表的字符串（从根到该节点的路径）的最长真后缀对应的 Trie 节点
 int idx;
 int cnt[N];                   // 每个字符串的出现次数
 vector<int> g[N];             // 基于fail指针建反向图
@@ -80,7 +81,7 @@ signed main()
         p = son[p][t[i] - 'a'];
         cnt[p]++;
     }
-    for (int i = 1; i <= idx; i++) // 建fail的反向图
+    for (int i = 1; i <= idx; i++) // 建fail的反向图 //因为在处理文章的时候没有进行回溯过程
     {
         int u = i;
         int v = fail[u];
@@ -185,7 +186,7 @@ void insert(int id, string s)
         p = son[p][u];
     }
     ed[id] = p;
-    alert[p] = 1;//设置报警
+    alert[p] = 1;//设置报警***********************************
 }
 void setfail()
 {
