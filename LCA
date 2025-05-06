@@ -10,14 +10,13 @@ int dep[N];
 int power;
 void dfs(int u,int p)//树上倍增
 {
-    if(u==rt) dep[u]=1;
-    else dep[u]=dep[p]+1;
-    st[u][0]=p;
+    dep[u]=dep[p]+1;
+    st[u][0]=p;//跳一步是自己的爸爸
     for(int i=1;i<=power;i++)
     {
         st[u][i]=st[st[u][i-1]][i-1];
     }
-    if(g[u].size() == 1 && g[u][0]==p) return;
+    
     for(int i=0;i<g[u].size();i++)
     {
         int v=g[u][i];
@@ -33,20 +32,20 @@ int lca(int a,int b)
     {
         if(dep[st[a][i]]>=dep[b]) 
         {
-            a=st[a][i];
+            a=st[a][i];//a跳到st[a][i]
         }
     }
     if(a==b) return b;//如果把a弄到和b同层后a==b说明他们两个的最近公共祖先就是b
     //他们两个开始一起跳 只有跳到位置的节点不同 才跳
     for(int i=power;i>=0;i--)
     {
-        if(st[a][i]!=st[b][i]) 
+        if(st[a][i]!=st[b][i]) //不用套dep 直接比较祖先
         {
             a=st[a][i];
             b=st[b][i];
         }
     }
-    return st[a][0];//因为一直找的都是不同的 所以最后哦只需在跳一步
+    return st[a][0];//因为一直找的都是不同的 所以最后只需在跳一步
 }
 
 
@@ -64,6 +63,7 @@ signed main()
         g[x].push_back(y);
         g[y].push_back(x);
     }
+    dep[0]=-1;//初始化dep[0]为-1 保证根节点的dep为1
     dfs(rt,0);
     while(m--)
     {
@@ -104,7 +104,7 @@ int ans[N];//记录答案
 
 void dfs(int u, int p)
 {
-    vis[u] = 1;//每次遍历到u把u标记并开始遍历以u为节点的子树
+    vis[u] = 1;//每次遍历到u，把u标记并开始遍历以u为节点的子树
     for (int i = 0; i < g[u].size(); i++)
     {
         int v = g[u][i];
@@ -113,6 +113,7 @@ void dfs(int u, int p)
         dfs(v, u);
         join(v, u);//遍历完子树就将子树合并到该点
     }
+    //可以在脑海中模拟一下
     for (int i = 0; i < gg[u].size(); i++)//处理u的问题
     {
         auto t = gg[u][i];
