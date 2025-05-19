@@ -1,0 +1,63 @@
+struct node
+{
+    int v, s;
+};
+vector<node> g[N];
+int T[N];
+int dis[N][N][N];
+int cnt = 0;
+int a[N];
+struct nodee
+{
+    int id, t;
+    bool operator<(const nodee &a) const
+    {
+        return t > a.t;
+    }
+};
+int mark[N];           // 标记已经重建好的村庄
+void upd(int t, int k) // 动态添点
+{
+    a[cnt] = t;
+    mark[k] = 1;
+    // cout << t << ' ' << k << endl;
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= n; j++)
+        {
+            dis[cnt][i][j] = dis[cnt - 1][i][j]; // 复制上一次的距离 因为是在上一次距离上更新的
+        }
+    }
+
+    for (int i = 0; i < g[k].size(); i++) // 更新每个点到k的最短距离
+    {
+        int u = g[k][i].v;
+        int s = g[k][i].s;
+
+        if (mark[u]) // 确保u已经重建
+        {
+          //  cout << s << endl;
+            dis[cnt][u][k] = dis[cnt][k][u] = min(dis[cnt][k][u], s);
+        }
+    }
+    // 利用中转点i在更新一下j到k的最短距离
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= n; j++)
+        {
+            if (mark[i] && mark[j])
+                dis[cnt][j][k] = dis[cnt][k][j] = min(dis[cnt][j][k], dis[cnt][j][i] + dis[cnt][i][k]);
+        }
+    }
+    // 把k当成中转点去更新其他点
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= n; j++)
+        {
+            if (mark[i] && mark[j])
+            {
+                dis[cnt][i][j] = min(dis[cnt][i][j], dis[cnt][i][k] + dis[cnt][k][j]);
+            }
+        }
+    }
+}
