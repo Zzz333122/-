@@ -1,0 +1,37 @@
+//书上01背包 朴素版
+#include <bits/stdc++.h>
+using namespace std;
+const int N = 400;
+int f[N][N];
+int n, m;
+vector<int> g[N];
+void dfs(int u)
+{
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        int v = g[u][i];
+        dfs(v);//处理子树
+        for (int j = m; j >= 1; j--)//01背包从后往前枚举背包容量
+        {
+            for (int k = 0; k < j; k++)//枚举要从子树中选择多少个 不能大于j 必须要选择父亲
+            {
+                f[u][j] = max(f[u][j], f[u][j - k] + f[v][k]);
+            }
+        }
+    }
+}
+signed main()
+{
+    cin >> n >> m;
+    m++; // 添加一个0号节点把森林连成一棵树
+    for (int i = 1; i <= n; i++)
+    {
+        int p, w;
+        cin >> p >> w;
+        g[p].push_back(i);
+        f[i][1] = w; // i号节点选1个的时候就是直选自己
+    }
+    dfs(0);
+    cout << f[0][m];
+    return 0;
+}
