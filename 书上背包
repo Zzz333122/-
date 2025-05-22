@@ -50,39 +50,41 @@ int sz[N];
 int val[N];
 int dfs(int u)
 {
-    dfn[++idx] = u;//获得dfn序 
-    //val[idx] = u;
+    //  dfn[++idx] = u; // 获得dfn序
+    val[++idx] = w[u];
+    int t=idx;//下面不能直接写idx idx在下面会更新
     sz[idx] = 1;
     for (int i = 0; i < g[u].size(); i++)
     {
         int v = g[u][i];
-        sz[idx] += dfs(v);//可以这样获得sz的大小 用int类型的返回
+        sz[t] += dfs(v); // 可以这样获得sz的大小 用int类型的返回
     }
-    return sz[idx];
+    return sz[t];
 }
 
 signed main()
 {
     cin >> n >> m;
-    m++;//因为加了个0号节点
+    w[0]=0;
+    // m++; // 因为加了个0号节点
     for (int i = 1; i <= n; i++)
     {
         int p;
         cin >> p;
         cin >> w[i];
-
         g[p].push_back(i);
     }
-    dfs(0);//注意0的dfn序是1
-    for (int i = n + 1; i >= 1; i--) // dfn序从后往前遍历
+    dfs(0);                          // 注意0的dfn序是1
+                                     // cout << idx << endl;
+    for (int i = n + 1; i >= 2; i--) // dfn序从后往前遍历
     {
         for (int j = 1; j <= m; j++)
         {
-            f[i][j] = max(f[i + sz[dfn[i]]][j], f[i + 1][j - 1] + w[dfn[i]]);
-            //不选i就不能选i的子树，所以+sz[dfn[i]]
-            //选i就可以选其后面的所有点
+            f[i][j] = max(f[i + sz[i]][j], f[i + 1][j - 1] + val[i]);
+            // 不选i就不能选i的子树，所以+sz[i]
+            // 选i就可以选其后面的所有点
         }
     }
-    cout << f[1][m];
+    cout << w[0] + f[2][m];
     return 0;
 }
