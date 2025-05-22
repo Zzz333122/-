@@ -35,3 +35,54 @@ signed main()
     cout << f[0][m];
     return 0;
 }
+//dfn序优化书上背包 O(nm)
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+const int N = 500;
+int w[N];
+vector<int> g[N];
+int n, m;
+int dfn[N];
+int f[N][N];
+int idx = 0;
+int sz[N];
+int val[N];
+int dfs(int u)
+{
+    dfn[++idx] = u;//获得dfn序 
+    //val[idx] = u;
+    sz[idx] = 1;
+    for (int i = 0; i < g[u].size(); i++)
+    {
+        int v = g[u][i];
+        sz[idx] += dfs(v);//可以这样获得sz的大小 用int类型的返回
+    }
+    return sz[idx];
+}
+
+signed main()
+{
+    cin >> n >> m;
+    m++;//因为加了个0号节点
+    for (int i = 1; i <= n; i++)
+    {
+        int p;
+        cin >> p;
+        cin >> w[i];
+
+        g[p].push_back(i);
+    }
+    dfs(0);//注意0的dfn序是1
+    for (int i = n + 1; i >= 1; i--) // dfn序从后往前遍历
+    {
+        for (int j = 1; j <= m; j++)
+        {
+            f[i][j] = max(f[i + sz[dfn[i]]][j], f[i + 1][j - 1] + w[dfn[i]]);
+            //不选i就不能选i的子树，所以+sz[dfn[i]]
+            //选i就可以选其后面的所有点
+        }
+    }
+    cout << f[1][m];
+    return 0;
+}
