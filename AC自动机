@@ -82,6 +82,9 @@ signed main()
         p = son[p][t[i] - 'a'];
         cnt[p]++;//因为有fail的反向见图所以不需要用fail指针不断回溯去跳 只需在p的位置++
     }
+ //  for (int j = p; j && !f[i]; j = fail[j])//普通跳fail指针（p1470)
+  //  {
+   // }
     for (int i = 1; i <= idx; i++) // 建fail的反向图 //因为在处理文章的时候没有进行回溯过程************************** 
     {
         int u = i;
