@@ -20,7 +20,7 @@ void manacher()
     // len是以i为中心扩出来回文半径
     for (int i = 1, c = 1, r = 1, len = 0; i < t.size(); i++)//r是最长回文半径的有边界
     {
-        len = r >= i ? min(p[2 * c - i], r - i+1) : 1;//记得是r-i+1（下标从1开始，所以记得-1）
+        len = r >= i ? min(p[2 * c - i], r - i+1) : 1;//记得是r-i+1（下标从1开始，所以记得+1）
         while (i - len >= 1 && i + len < t.size() && t[i + len] == t[i - len])
             len++;
         if (len + i -1> r)
