@@ -1,0 +1,60 @@
+//悬线法p4147
+void AC()
+{
+    int n, m;
+    cin >> n >> m;
+    vc<vc<int>> a(n + 1, vc<int>(m + 1));
+    vc<vc<int>> r(n + 1, vc<int>(m + 1)), l(n + 1, vc<int>(m + 1)), h(n + 1, vc<int>(m + 1));
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= m; j++)
+        {
+            char c;
+            cin >> c;
+            if (c == 'F')
+            {
+                a[i][j] = h[i][j] = 1;//如果不是障碍高度初始就是1
+            }
+            r[i][j] = l[i][j] = j;//初始化为本身坐标
+        }
+    }
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 2; j <= m; j++)
+        {
+            if (a[i][j] && a[i][j - 1])//如果都不是障碍则递推更新l
+            {
+                l[i][j] = l[i][j - 1];
+            }
+        }
+        for (int j = m - 1; j >= 1; j--)
+        {
+            if (a[i][j] && a[i][j + 1])//与l同理
+            {
+                r[i][j] = r[i][j + 1];
+            }
+        }
+    }
+
+    int ans = 0;
+    //每到一个位置 尽可能地向上延伸 然后 在尽可能地往左往右延伸 
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= m; j++)
+        {
+            if (a[i][j] && a[i - 1][j])
+            {
+                h[i][j] = h[i - 1][j] + 1;
+                l[i][j] = max(l[i][j], l[i - 1][j]);//要保证上面的左也不能由障碍 所以要取max
+                r[i][j] = min(r[i][j], r[i - 1][j]);//同理
+            }
+            if (a[i][j])
+            {
+                ans = max(ans, h[i][j] * (r[i][j] - l[i][j] + 1));
+            }
+        }
+    }
+    cout << ans * 3 << endl;
+
+    return;
+}
