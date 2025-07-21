@@ -1,0 +1,127 @@
+//高斯消元 （化为行阶梯形矩阵
+void work()
+{
+    int c,r;//c：列 r：行
+    for(c=1,r=1;c<=n;c++)
+    {
+        int t=r;
+        for(int i=r;i<=n;i++)//找到该列绝对值最大的那一行 选绝对值最大是为了尽量避免误差
+        {
+            if(fabs(a[t][c])<fabs(a[i][c]))
+            {
+                t=i;
+            }
+        }
+        
+       if(fabs(a[t][c])<eps) 
+       {
+          
+           continue;//如果绝对值最大值等于0说明这列不需要进行操作了，但也同时会存在矛盾方程
+       }
+       for(int i=c;i<=n+1;i++)//将绝对值最大的一行放在还xz未固定的第一行******
+       {
+           swap(a[r][i],a[t][i]);
+       }
+       for(int i=n+1;i>=c;i--) a[r][i]/=a[r][c];//将绝对值最大的一行的该列数字变成1，但是要反着迭代
+       
+       for(int i=r+1;i<=n;i++)
+       {
+           if(fabs(a[i][c])<eps) continue;   //如果已经等于0 就不用再继续处理了
+           for(int j=n+1;j>=c;j--) // 反着迭代 把其他行的这一列的位置的元素消为0
+           {
+                a[i][j]-=a[i][c]*a[r][j];
+           }
+       }
+     
+       r++;
+     
+    }
+    
+    if(r<=n)
+    {
+        for(int i=r;i<=n;i++)
+        {
+            if(fabs(a[i][n+1])>eps) 
+            {
+                cout<<"No solution";
+                return;
+            }
+           
+        }
+        cout<<"Infinite group solutions";
+        return;
+    }
+    else 
+    {
+        for(int i=n;i>=1;i--)//反这迭代
+        {
+            for(int j=i+1;j<=n+1;j++)
+            {
+                a[i][n+1]-=a[j][n+1]*a[i][j];
+            }
+        }
+        for(int i=1;i<=n;i++)
+        {
+            printf("%.2lf\n",a[i][n+1]);
+        }
+    }
+
+}
+
+void work()
+{
+    int c, r;
+    for (c = 1, r = 1; c <= n; c++)
+    {
+        int t = r;
+        for (int i = r + 1; i <= n; i++)
+        {
+            if (fabs(a[i][c]) > fabs(a[t][c]))
+            {
+                t = i;
+            }
+        }
+        if (fabs(a[t][c]) < eps)
+        {
+            continue;
+        }
+        for (int i = c; i <= n + 1; i++) // 把绝对值最大的一行弄到最上面
+        {
+            swap(a[r][i], a[t][i]);
+        }
+
+        for (int i = n + 1; i >= c; i--)
+        {
+            a[r][i] /= a[r][c];
+        }
+        for (int i = 1; i <= n; i++) // 从1开始枚举 把每一行都消为0
+        {
+            if (fabs(a[i][c]) < eps || i == r)
+                continue; // i == r的时候是本行不需要消元了
+            for (int j = n + 1; j >= c; j--) 
+            {
+                a[i][j] -= a[r][j] * a[i][c];
+            }
+        }
+        // cout << r << ' ' << c << endl;
+        r++;
+    }
+    //   cout<<r<<endl;
+    if (r <= n)
+    {
+        for (int i = r; i <= n; i++)
+        {
+            if (fabs(a[i][n + 1]) > eps)
+            {
+                cout << "No solution" << endl;
+                return;
+            }
+        }
+        puts("Infinite group solutions");
+    }
+    else
+    {
+        for (int i = 1; i <= n; i++)
+            printf("%.2lf\n", a[i][n + 1]);
+    }
+}
