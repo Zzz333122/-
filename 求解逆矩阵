@@ -1,0 +1,96 @@
+// 高斯约旦消元法求解逆矩阵---------------------------------------------------------------------
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+
+const double eps = 1e-6;
+const int N = 1100;
+const int mod = 1e9 + 7;
+
+int a[N][N];
+int n;
+
+int ksm(int a, int k)
+{
+    int res = 1;
+    while (k)
+    {
+        if (k & 1)
+            res = res * a % mod;
+        k >>= 1;
+        a = a * a % mod;
+    }
+    return res;
+}
+
+void njz()
+{
+    /// cout << "hhh" << endl;
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = n + 1; j <= 2 * n; j++)
+        {
+            if (j - n == i)
+                a[i][j] = 1;
+        }
+    }
+
+    int c, r;
+    for (c = 1, r = 1; c <= n; c++)
+    {
+        // cout << r << ' ' << c << endl;
+        int t = r;
+        for (int i = r + 1; i <= n; i++)
+        {
+            if (a[i][c] > a[t][c])
+            {
+                t = i;
+            }
+        }
+        if (a[t][c] == 0)
+        {
+            cout << "No Solution" << endl;
+            return;
+        }
+        for (int i = c; i <= 2 * n; i++)
+        {
+            swap(a[r][i], a[t][i]); // 再交换完之后就不能用t了 t已经被交换了
+        }
+        int tt = ksm(a[r][c], mod - 2);
+        for (int i = 2 * n; i >= c; i--)
+        {
+            a[r][i] = ((a[r][i] % mod * tt % mod) % mod + mod) % mod;
+        }
+        for (int i = 1; i <= n; i++)
+        {
+            if (a[i][c] == 0 || i == r)
+                continue;
+            for (int j = 2 * n; j >= c; j--)
+            {
+                a[i][j] = ((a[i][j] % mod - (a[i][c] % mod * a[r][j] % mod) % mod) % mod + mod) % mod;
+            }
+        }
+        r++;
+    }
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = n + 1; j <= 2 * n; j++)
+        {
+            cout << a[i][j] << ' ';
+        }
+        cout << endl;
+    }
+}
+
+signed main()
+{
+    cin >> n;
+    for (int i = 1; i <= n; i++)
+    {
+        for (int j = 1; j <= n; j++)
+            cin >> a[i][j];
+    }
+    njz();
+
+    return 0;
+}
