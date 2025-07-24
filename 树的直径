@@ -58,7 +58,7 @@ struct node
     int v, s;
 };
 vector<node> g[N];
-int dis[N];
+int dis[N];//从u开始只能往下走的最长距离
 //int ans[N];
 int ans;
 void dfs(int u, int p)
