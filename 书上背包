@@ -35,7 +35,7 @@ signed main()
     cout << f[0][m];
     return 0;
 }
-//dfn序优化书上背包 O(nm)
+//dfn序优化书上背包 O(nm) // 在用的死后把数组稍微开大一点
 #include <bits/stdc++.h>
 using namespace std;
 #define int long long
