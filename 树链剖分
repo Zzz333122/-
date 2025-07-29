@@ -1,0 +1,212 @@
+//路径更改/查询 子树更改/查询 p3384
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+#define pb push_back
+#define vc vector
+#define IOS cin.tie(0), cout.tie(0)->ios::sync_with_stdio(0);
+const int N = 1e6 + 100;
+int mod;
+int MOD(int x) { return x % mod; }
+int tr[N]; // 维护累加和 下表对应的是dfn序的
+int lz[N]; // 区间修改的懒更新
+vc<int> w;
+vc<int> seg;
+
+void up(int p)
+{
+    tr[p] = (tr[p << 1] + tr[p << 1 | 1]) % mod;
+}
+void lazy(int p, int n, int c)
+{
+    lz[p] += c;
+    lz[p] %= mod;
+    tr[p] += MOD(n * c);
+    tr[p] %= mod;
+}
+void down(int p, int l, int r)
+{
+    int mid = l + r >> 1;
+    int u = p << 1, v = p << 1 | 1;
+    lazy(u, mid - l + 1, lz[p]);
+    lazy(v, r - mid, lz[p]);
+    lz[p] = 0;
+}
+
+void build(int l, int r, int p)
+{
+    if (l == r)
+    {
+        tr[p] = w[seg[l]] % mod;
+        lz[p] = 0;
+        return;
+    }
+    int mid = l + r >> 1;
+    build(l, mid, p << 1);
+    build(mid + 1, r, p << 1 | 1);
+    up(p);
+}
+
+void add(int jl, int jr, int l, int r, int p, int c)
+{
+    if (jl <= l && r <= jr)
+    {
+        lazy(p, r - l + 1, c);
+        return;
+    }
+    int mid = l + r >> 1;
+    down(p, l, r);
+    if (jl <= mid)
+        add(jl, jr, l, mid, p << 1, c);
+    if (jr > mid)
+        add(jl, jr, mid + 1, r, p << 1 | 1, c);
+    up(p);
+}
+
+int query(int jl, int jr, int l, int r, int p)
+{
+    if (jl <= l && r <= jr)
+    {
+        return tr[p];
+    }
+    down(p, l, r);
+    int mid = l + r >> 1;
+    int res = 0;
+    if (jl <= mid)
+        res += query(jl, jr, l, mid, p << 1);
+
+    if (jr > mid)
+        res += query(jl, jr, mid + 1, r, p << 1 | 1);
+    return res % mod;
+}
+
+void AC()
+{
+    int n, m, rt, p;
+    cin >> n >> m >> rt >> mod;
+    w.assign(n + 1, 0);
+    for (int i = 1; i <= n; i++)
+        cin >> w[i];
+    vc<vc<int>> g(n + 1);
+    for (int i = 1; i < n; i++)
+    {
+        int u, v;
+        cin >> u >> v;
+        g[u].pb(v);
+        g[v].pb(u);
+    }
+    vc<int> fa(n + 1), sz(n + 1), dep(n + 1), dfn(n + 1), top(n + 1), son(n + 1);
+    seg.assign(n + 1, 0);
+    // u的爸爸 u子树大小 u的深度 dfn序 dfn序对应的原节点 所在重链的头节点 重儿子
+    int idx = 0; // dfn序的计数
+
+    auto dfs = [&](auto dfs, int u, int p) -> void // 先设置fa dep sz son
+    {
+        dep[u] = dep[p] + 1;
+        sz[u] = 1;
+        fa[u] = p;
+        int mx = 0;
+        for (int v : g[u])
+        {
+            if (v == p)
+                continue;
+            dfs(dfs, v, u);
+            sz[u] += sz[v];
+            if (sz[v] > mx)
+            {
+                mx = sz[v];
+                son[u] = v;
+            }
+        }
+    };
+    dfs(dfs, rt, 0);
+    // 构建重链
+    /*
+        同一段重链或一颗的子树的dfn序都是连续的
+    */
+    // 这里的参数不在传父亲 而是传重链的头
+    auto dfss = [&](auto dfss, int u, int t) -> void // 去设置top dfn seg
+    {
+        top[u] = t;
+        dfn[u] = ++idx;
+        seg[idx] = u;
+        if (son[u] == 0)
+            return;
+        dfss(dfss, son[u], t); // 先遍历重儿子******** 不然没法让一条重链上的dfn序连续
+        for (int v : g[u])
+        {
+            if (v == fa[u] || v == son[u])
+                continue;
+            dfss(dfss, v, v); // 轻儿子新开一条链 以自己为头 v
+        }
+    };
+    dfss(dfss, rt, rt);
+    build(1, idx, 1); // 以dfn序建立线段树
+
+    auto pth = [&](int x, int y, int c = -1) // 路径修改/查询 (c = -1是查询 )
+    {
+        int res = 0;
+        while (top[x] != top[y]) // 直达跳在一条重链上为止
+        {
+            if (dep[top[x]] >= dep[top[y]]) // 深度大的先往上跳
+            {
+                if (c != -1)
+                    add(dfn[top[x]], dfn[x], 1, idx, 1, c); // 把这条重链被覆盖的地方加上c
+                else
+                    res = (res + query(dfn[top[x]], dfn[x], 1, idx, 1)) % mod;
+                x = fa[top[x]];
+            }
+            else
+            {
+                if (c != -1)
+                    add(dfn[top[y]], dfn[y], 1, idx, 1, c);
+                else
+                    res = (res + query(dfn[top[y]], dfn[y], 1, idx, 1)) % mod;
+                y = fa[top[y]];
+            }
+        }
+        if (c != -1)
+            add(min(dfn[x], dfn[y]), max(dfn[x], dfn[y]), 1, idx, 1, c); // 最后都在一条重链上去了 直接修改就行
+        else
+            res = (res + query(min(dfn[x], dfn[y]), max(dfn[x], dfn[y]), 1, idx, 1)) % mod;
+        return res;
+    };
+
+    auto tree = [&](int x, int v = -1)
+    {
+        if (v != -1)
+        {
+            add(dfn[x], dfn[x] + sz[x] - 1, 1, idx, 1, v);
+            return 1ll;
+        }
+        else
+            return query(dfn[x], dfn[x] + sz[x] - 1, 1, idx, 1);
+    };
+    while (m--)
+    {
+        int op, x, y, z;
+        cin >> op;
+        if (op == 1)
+        {
+            cin >> x >> y >> z;
+             pth(x, y, z);
+        }
+        else if (op == 2)
+        {
+            cin >> x >> y;
+            cout << pth(x, y) << endl;
+        }
+        else if (op == 3)
+        {
+            cin >> x >> z;
+            tree(x, z);
+        }
+        else
+        {
+            cin >> x;
+            cout << tree(x) << endl;
+        }
+    }
+
+    return;
+}
