@@ -210,3 +210,55 @@ void AC()
 
     return;
 }
+
+//树链剖分求解lca
+ vc<int> son(n + 1), fa(n + 1), top(n + 1), dep(n + 1), sz(n + 1);
+    auto dfs = [&](auto dfs, int u, int p) -> void
+    {
+        dep[u] = dep[p] + 1;
+        sz[u] = 1;
+        fa[u] = p;
+        int mx = 0;
+        for (int v : g[u])
+        {
+            if (v == p)
+                continue;
+            dfs(dfs, v, u);
+            sz[u] += sz[v];
+            if (mx < sz[v])
+            {
+                mx = sz[v];
+                son[u] = v;
+            }
+        }
+    };
+    dfs(dfs, rt, 0);
+    auto dfss = [&](auto dfss, int u, int t) -> void
+    {
+        top[u] = t;
+        if (son[u] == 0)
+        {
+            return;
+        }
+        dfss(dfss, son[u], t);
+        for (int v : g[u])
+        {
+            if (v == fa[u] || v == son[u])
+                continue;
+            dfss(dfss, v, v);
+        }
+    };
+    dfss(dfss, rt, rt);
+    auto lca = [&](int x, int y)
+    {
+        while (top[x] != top[y])
+        {
+            if (dep[top[x]] >= dep[top[y]])
+            {
+                x = fa[top[x]];
+            }
+            else
+                y = fa[top[y]];
+        }
+        return dep[x] <= dep[y] ? x : y;
+    };
