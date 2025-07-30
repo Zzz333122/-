@@ -124,6 +124,7 @@ vector<int> query(int jl, int jr, int l, int r, int p) // 找能到影响[jl,jr]
     a.push_back(suf);
     return a;
 }
+
 void build(int l, int r, int p) // 建树
 {
     if (l == r)
@@ -177,7 +178,7 @@ void reverse(int jl, int jr, int l, int r, int p)
     up(p, mid - l + 1, r - mid);
 }
 //洛谷p2894
-int find(int l, int r, int p, int x)//查询是否右长度为x的区间
+int find(int l, int r, int p, int x)//查询是否有长度为x的区间
 {
     if (len[p] < x)
         return 0;
