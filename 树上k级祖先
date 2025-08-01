@@ -1,0 +1,82 @@
+//树链剖分求树上k级祖先O(1)
+int n;
+vc<int> g[N];
+int rt;
+int st[N][50];
+int stlen;
+int len[N];
+int son[N];
+int dep[N];
+int down[N];
+int up[N];
+int dfn[N];
+int top[N];
+int idx;
+
+void dfs(int u, int p)
+{
+    dep[u] = dep[p] + 1;
+    st[u][0] = p; // 处理st表
+    for (int i = 1; i <= stlen; i++)
+    {
+        st[u][i] = st[st[u][i - 1]][i - 1];
+    }
+
+    for (int v : g[u])
+    {
+        if (v == p)
+            continue;
+        dfs(v, u);
+        if (len[v] > len[son[u]]) // 更新长儿子
+        {
+            son[u] = v;
+        }
+    }
+    len[u] = len[son[u]] + 1;
+}
+void dfss(int u, int t)
+{
+    dfn[u] = ++idx;
+    top[u] = t;
+    if (son[u] == 0)
+        return;
+    dfss(son[u], t);
+    for (int v : g[u])
+    {
+        if (v == son[u] || v == st[u][0])
+            continue;
+        dfss(v, v);
+    }
+}
+void prep()
+{
+    dfs(rt, 0);
+    dfss(rt, rt);
+    for (int u = 1; u <= n; u++)
+    {
+        if (top[u] == u) // 只有是头节点的时候才能更新
+        {
+            for (int i = 0, a = u, b = u; i < len[u]; i++, a = st[a][0], b = son[b]) // 更新up和down数组
+            {
+                up[dfn[u] + i] = a;
+                down[dfn[u] + i] = b;
+            }
+        }
+    }
+}
+int lca(int x, int k) // 找x的第k级祖先
+{
+    if (k == 0)
+        return x;
+    int t = log2(k);
+    if (k - lowbit(k) == 0) // 是2的某次方
+    {
+        return st[x][t];
+    }
+    // 找到k的最高位1
+    x = st[x][t];              // 跳到该位置
+    k -= 1 << t;               // k减去这些步
+    k -= dep[x] - dep[top[x]]; // 继续跳到x的top节点
+    x = top[x];
+    return k >= 0 ? up[dfn[x] + k] : down[dfn[x] - k]; // 如果还余量就继续往上跳 否则就往下跳
+}
