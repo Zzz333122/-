@@ -4,11 +4,14 @@ vc<int> g[N];
 int rt;
 int st[N][50];
 int stlen;
-int len[N];
+int len[N]; // 长链长度
 int son[N];
 int dep[N];
 int down[N];
 int up[N];
+/*
+    up和down只有top节点有，top节点往上/下走i步的节点是什么
+*/
 int dfn[N];
 int top[N];
 int idx;
