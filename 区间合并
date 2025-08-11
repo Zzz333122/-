@@ -1,0 +1,36 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define pii pair<int,int>
+vector<pii> segs;
+int n;
+void merge()
+{
+	vector<pii> res;
+	int st = -2e9;
+	int ed = -2e9;
+	for (auto seg:segs)
+	{
+		if (ed < seg.first)
+		{
+			if (st != -2e9) res.push_back({ st,ed });
+			st = seg.first, ed = seg.second;
+		}
+		else ed = max(ed, seg.second);
+	}
+	if (st != -2e9) res.push_back({ st, ed });
+	segs = res;
+}
+int main()
+{
+	cin >> n;
+	for (int i = 1; i <= n; i++)
+	{
+		int l, r;
+		cin >> l >> r;
+		segs.push_back({ l,r });
+	}
+	sort(segs.begin(), segs.end());
+	merge();
+	cout << segs.size();
+	return 0;
+}
