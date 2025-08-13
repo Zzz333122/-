@@ -1,0 +1,231 @@
+// 分块单点修改 区间查询 Give Away （spoj）
+void AC()
+{
+    int n;
+    cin >> n;
+    vc<int> a(n + 1);
+    vc<int> srt(n + 1); // 分块后的有序数组
+    for (int i = 1; i <= n; i++)
+        cin >> a[i], srt[i] = a[i];
+    int blen, bnum;
+    blen = sqrt(n);               // 块的大小
+    bnum = (n + blen - 1) / blen; // 块的数量
+    vc<int> bi(n + 1);            // 每个索引对应块的索引是哪个
+    for (int i = 1; i <= n; i++)
+    {
+        bi[i] = (i - 1) / blen + 1;
+    }
+    vc<int> br(bnum + 1); // 块的右边界
+    vc<int> bl(bnum + 1); // 块的左边界
+    for (int i = 1; i <= bnum; i++)
+    {
+        bl[i] = (i - 1) * blen + 1;
+        br[i] = min(i * blen, n);
+    }
+    for (int i = 1; i <= bnum; i++)
+    {
+        sort(srt.begin() + bl[i], srt.begin() + br[i] + 1); // 给每个块排好序2
+    }
+
+    auto upd = [&](int x, int c)
+    {
+        int l = bl[bi[x]];
+        int r = br[bi[x]];
+        a[x] = c;
+        for (int i = l; i <= r; i++)
+            srt[i] = a[i];
+        sort(srt.begin() + l, srt.begin() + r + 1);
+    };
+    auto qcnt = [&](int i, int v)
+    {
+        int t = lower_bound(srt.begin() + bl[i], srt.begin() + br[i] + 1, v) - srt.begin() - bl[i];
+        return br[i] - bl[i] + 1 - t;
+    };
+    auto qry = [&](int l, int r, int v)
+    {
+        int ans = 0;
+        if (bi[l] == bi[r]) // 如果在同一块 直接查找即可
+        {
+            for (int i = l; i <= r; i++)
+            {
+                if (a[i] >= v)
+                    ans++;
+            }
+        }
+        else
+        {
+            for (int i = l; i <= br[bi[l]]; i++) // 获得左边散块
+            {
+                if (a[i] >= v)
+                    ans++;
+            }
+            for (int i = bl[bi[r]]; i <= r; i++) // 获得右边散块
+            {
+                if (a[i] >= v)
+                    ans++;
+            }
+            for (int i = bi[l] + 1; i <= bi[r] - 1; i++) // 获得横跨过去的块
+            {
+                ans += qcnt(i, v); // 获得每一个块大于等于v的数量
+            }
+        }
+        return ans;
+    };
+    int q;
+    cin >> q;
+    while (q--)
+    {
+        int op;
+        int a, b, c;
+        cin >> op;
+        if (op == 0)
+        {
+            cin >> a >> b >> c;
+            cout << qry(a, b, c) << endl;
+        }
+        else
+        {
+            cin >> a >> b;
+            upd(a, b);
+        }
+    }
+}
+// 分块 区间查询/更新 p2801
+void AC()
+{
+    int n;
+    int q;
+    cin >> n;
+    cin >> q;
+    vc<int> a(n + 1);
+    vc<int> srt(n + 1); // 分块后的有序数组
+    for (int i = 1; i <= n; i++)
+        cin >> a[i], srt[i] = a[i];
+    int blen, bnum;
+    blen = sqrt(n);               // 块的大小
+    bnum = (n + blen - 1) / blen; // 块的数量
+    vc<int> bi(n + 1);            // 每个索引对应块的索引是哪个
+    vc<int> lz(bnum + 1);         // 懒更新数组 但是无须下发 只需查找的时候删去即可
+    for (int i = 1; i <= n; i++)
+    {
+        bi[i] = (i - 1) / blen + 1;
+    }
+    vc<int> br(bnum + 1); // 块的右边界
+    vc<int> bl(bnum + 1); // 块的左边界
+    for (int i = 1; i <= bnum; i++)
+    {
+        bl[i] = (i - 1) * blen + 1;
+        br[i] = min(i * blen, n);
+    }
+    for (int i = 1; i <= bnum; i++)
+    {
+        sort(srt.begin() + bl[i], srt.begin() + br[i] + 1); // 给每个块排好序2
+    }
+
+    auto inupd = [&](int l, int r, int v)
+    {
+        for (int i = l; i <= r; i++)
+        {
+            a[i] += v;
+        }
+        for (int i = bl[bi[l]]; i <= br[bi[l]]; i++)
+        {
+            srt[i] = a[i];
+        }
+        sort(srt.begin() + bl[bi[l]], srt.begin() + br[bi[l]] + 1);
+    };
+
+    auto upd = [&](int l, int r, int c)
+    {
+        if (bi[l] == bi[r])
+        {
+            inupd(l, r, c);
+        }
+        else
+        {
+            inupd(l, br[bi[l]], c);
+            inupd(bl[bi[r]], r, c);
+            for (int i = bi[l] + 1; i <= bi[r] - 1; i++)
+            {
+                lz[i] += c;
+            }
+        }
+    };
+    auto qcnt = [&](int i, int v)
+    {
+        v -= lz[i]; // 减去lz
+        int t = lower_bound(srt.begin() + bl[i], srt.begin() + br[i] + 1, v) - srt.begin() - bl[i];
+        return br[i] - bl[i] + 1 - t;
+    };
+    auto inqry = [&](int l, int r, int v)
+    {
+        int res = 0;
+        for (int i = l; i <= r; i++)
+        {
+            if (a[i] >= v - lz[bi[l]])
+                res++;
+        }
+        return res;
+    };
+
+    auto qry = [&](int l, int r, int v)
+    {
+        int ans = 0;
+        if (bi[l] == bi[r]) // 如果在同一块 直接查找即可
+        {
+            ans += inqry(l, r, v);
+        }
+        else
+        {
+
+            ans += inqry(l, br[bi[l]], v);
+            ans += inqry(bl[bi[r]], r, v);
+            for (int i = bi[l] + 1; i <= bi[r] - 1; i++) // 获得横跨过去的块
+            {
+                ans += qcnt(i, v); // 获得每一个块大于等于v的数量
+            }
+        }
+        return ans;
+    };
+
+    while (q--)
+    {
+        string op;
+        int a, b, c;
+        cin >> op;
+        if (op == "M")
+        {
+            cin >> a >> b >> c;
+            upd(a, b, c);
+        }
+        else
+        {
+            cin >> a >> b >> c;
+            cout << qry(a, b, c) << endl;
+        }
+    }
+}
+// 分块经典求 第i块到第j块的数据
+
+  for (int i = 1; i <= bnum; i++)
+    {
+        for (int j = i; j <= bnum; j++)
+        {
+            int mst = mode[i][j - 1];
+            int mstcnt = gcnt(i, j, mst);
+            for (int k = bl[j]; k <= br[j]; k++)
+            {
+                int cur = a[k];
+                int curcnt = gcnt(i, j, cur);
+                //     cout << "curcnt::" << curcnt << ' ' << mstcnt << endl;
+                if ((mstcnt < curcnt) || (mstcnt == curcnt && cur < mst))
+                {
+                    // cout << "here" << endl;
+                    mst = cur;
+                    mstcnt = curcnt;
+                }
+            }
+            mode[i][j] = mst;
+            //   cout << i << ' ' << j << ' ' << mode[i][j] << endl;
+        }
+    }
