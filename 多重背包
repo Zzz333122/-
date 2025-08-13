@@ -1,0 +1,32 @@
+//二进制优化多重背包
+    cin >> n >> m;
+    vc<int> w;
+    w.pb(0);
+    auto v = w;
+    for (int i = 1; i <= n; i++)
+    {
+        int ww, vv, s;
+        cin >> ww >> vv >> s;
+        int k = 1;
+        while (s >= k)
+        {
+            v.pb(k * vv);
+            w.pb(k * ww);
+            s -= k;
+            k <<= 1;
+        }
+        if (s > 0)
+        {
+            v.pb(s * vv);
+            w.pb(s * ww);
+        }
+    }
+    vc<int> f(m + 1);
+    for (int i = 1; i < w.size(); i++)
+    {
+        for (int j = m; j >= v[i]; j--)
+        {
+            f[j] = max(f[j], f[j - v[i]] + w[i]);
+        }
+    }
+    cout << f[m] << endl;
