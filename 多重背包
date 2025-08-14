@@ -30,3 +30,55 @@
         }
     }
     cout << f[m] << endl;
+//单调队列优化多重背包
+void AC()
+{
+    int n, m;
+    cin >> n >> m;
+    vc<int> w(n + 1);
+    vc<int> v(n + 1);
+    vc<int> s(n + 1);
+    for (int i = 1; i <= n; i++)
+    {
+        cin >> w[i] >> v[i] >> s[i];
+    }
+    vc<int> f(m + 1);
+    auto get = [&](int i, int j) // 获取在单调队列里面的值
+    {
+        return f[j] - j / v[i] * w[i];
+    };
+    for (int i = 1; i <= n; i++)
+    {
+        for (int mod = 0; mod <= min(m, v[i] - 1); mod++) // 按余数分类
+        {
+            deque<int> q;
+            for (int j = m - mod, cnt = 1; j >= 0 && cnt <= s[i]; j -= v[i], cnt++) // 先进去这些数量个
+            {
+                while (q.size() && get(i, q.back()) <= get(i, j))
+                {
+                    q.pop_back();
+                }
+                q.push_back(j);
+            }
+            for (int j = m - mod, ch = j - v[i] * s[i]; j >= 0; j -= v[i], ch -= v[i]) // 到着往后来
+            {
+                if (ch >= 0)
+                {
+                    while (q.size() && get(i, q.back()) <= get(i, ch))
+                    {
+                        q.pop_back();
+                    }
+                    q.pb(ch);
+                }
+
+                f[j] = get(i, q.front()) + j / v[i] * w[i];
+
+                if (q.front() == j)
+                {
+                    q.pop_front();
+                }
+            }
+        }
+    }
+    cout << f[m] << endl;
+}
