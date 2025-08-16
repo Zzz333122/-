@@ -26,7 +26,7 @@
     {
         for (int j = m; j >= v[i]; j--)
         {
-            f[j] = max(f[j], f[j - v[i]] + w[i]);
+            f[j] = max(f[j], f[j - v[i]] + w[i]); 
         }
     }
     cout << f[m] << endl;
@@ -45,7 +45,7 @@ void AC()
     vc<int> f(m + 1);
     auto get = [&](int i, int j) // 获取在单调队列里面的值
     {
-        return f[j] - j / v[i] * w[i];
+        return f[j] - j / v[i] * w[i];  // 为什么要这样写呢？ 因为每个位置不仅和当前的值有关 还和位置有关 应该减去位置带来的偏移量
     };
     for (int i = 1; i <= n; i++)
     {
