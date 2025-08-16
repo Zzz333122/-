@@ -73,9 +73,9 @@ void AC()
                     q.pb(ch);
                 }
 
-                f[j] = get(i, q.front()) + j / v[i] * w[i];
-
-                if (q.front() == j)
+                f[j] = get(i, q.front()) + j / v[i] * w[i]; // 加上被减去的偏移量 以及 来到现有位置应该加的
+                // 为什么不去max 因为单调队列中以及包含f[j]了
+                if (q.front() == j) // 只有队头是j 才会移除 因为j要么是对头要么已经被去除了
                 {
                     q.pop_front();
                 }
