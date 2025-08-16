@@ -60,6 +60,8 @@ void AC()
                 }
                 q.push_back(j);
             }
+            //Q:为什么前面进去了s[i]个了 刚进循环又要再进来一个 
+            //A:因为j这个位置可以从 -0 -v[i] -2*v[i] .. -s[i]*v[i] 中选择一个 s[i]+1个数字
             for (int j = m - mod, ch = j - v[i] * s[i]; j >= 0; j -= v[i], ch -= v[i]) // 到着往后来
             {
                 if (ch >= 0)
