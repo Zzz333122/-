@@ -154,3 +154,17 @@ signed main()
 
     return 0;
 }
+//树链剖分求lca
+auto lca = [&](int x, int y)
+{
+    while (top[x] != top[y])
+    {
+        if (dep[top[x]] >= dep[top[y]])
+        {
+            x = fa[top[x]];
+        }
+        else
+            y = fa[top[y]];
+    }
+    return dep[x] <= dep[y] ? x : y;
+};
