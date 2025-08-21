@@ -1,0 +1,8 @@
+ auto get = [&](int msk, int j)
+{
+    return msk / jc[j] % 3;  // jc 为3进制阶乘数组
+};
+auto upd = [&](int msk, int j, int c)
+{
+    return msk - get(msk, j) * jc[j] + c * jc[j];
+};
