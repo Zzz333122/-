@@ -263,7 +263,7 @@ auto lca = [&](int x, int y)
     return dep[x] <= dep[y] ? x : y;
 };
 
-//已知x在y的子树里 找到y的哪个儿子里有x
+//已知x在y的子树里 找到y的哪个儿子里有x ** * ********
 int find(int x,int y)
 {
     while(top[x]!=top[y])
@@ -272,5 +272,194 @@ int find(int x,int y)
         x=fa[top[x]];
     }
     return son[y]; //否则跳到一个重链上去 那么y的重儿子就是
+}
+//树链剖分维护轻儿子信息tag数组  *******
+#include <bits/stdc++.h>
+using namespace std;
+#define int long long
+#define db double
+#define pii pair<int, int>
+#define pdd pair<db, db>
+#define x first
+#define y second
+#define eb emplace_back
+#define pb push_back
+#define vc vector
+#define re memset
+#define ull unsigned long long
+#define ll long long
+#define BUFF cin.tie(0), cout.tie(0)->ios::sync_with_stdio(0);
+#define lll __int128
+#define ulll __uint128_t
+// #define endl '\n'
+#define umap unordered_map
+#define uset unordered_set
+#define ALL(x) x.begin(), x.end()
+#define lowbit(x) (x & -x)
+#define ls(x) x << 1
+#define rs(x) x << 1 | 1
+const int INF = 1e18, mod = 100000000;
+const int N = 1e6 + 100;
+
+
+int a[N];
+int dfn[N];
+int top[N];
+int son[N];
+int sz[N];
+int fa[N];
+int idx;
+int seg[N];
+int dep[N];
+
+namespace SGT
+{
+    struct node
+    {
+        int mx;
+    } tr[N * 4];
+
+    void up(int p)
+    {
+        tr[p].mx = max(tr[ls(p)].mx, tr[rs(p)].mx);
+    }
+    void build(int l, int r, int p)
+    {
+        if (l == r)
+        {
+            tr[p].mx = a[seg[l]];
+            return;
+        }
+        int mid = l + r >> 1;
+        build(l, mid, ls(p));
+        build(mid + 1, r, rs(p));
+        up(p);
+    }
+    void add(int aim, int l, int r, int p, int c)
+    {
+        if (l == r)
+        {
+            tr[p].mx += c;
+            return;
+        }
+        int mid = l + r >> 1;
+        if (aim <= mid)
+            add(aim, l, mid, ls(p), c);
+        if (aim > mid)
+            add(aim, mid + 1, r, rs(p), c);
+        up(p);
+    }
+    int qmx(int jl, int jr, int l, int r, int p)
+    {
+        if (jl > jr)
+            return -INF; // 处理无效区间（左>右）
+        if (jl <= l && r <= jr)
+        {
+            return tr[p].mx;
+        }
+        int mid = l + r >> 1;
+        int res = -INF;
+        if (jl <= mid)
+            res = max(res, qmx(jl, jr, l, mid, ls(p)));
+        if (jr > mid)
+            res = max(res, qmx(jl, jr, mid + 1, r, rs(p)));
+        return res;
+    }
+}
+vc<int> g[N];
+void dfs(int u, int p)
+{
+    fa[u] = p;
+    sz[u] = 1;
+    dep[u] = dep[p] + 1;
+    son[u] = 0;
+    for (int v : g[u])
+    {
+        if (v == p)
+            continue;
+        dfs(v, u);
+        sz[u] += sz[v];
+        if (sz[son[u]] < sz[v])
+            son[u] = v;
+    }
+}
+void dfss(int u, int t)
+{
+    dfn[u] = ++idx;
+    seg[idx] = u;
+    top[u] = t;
+    if (son[u] == 0)
+        return;
+    dfss(son[u], t);
+    for (int v : g[u])
+    {
+        if (v == fa[u] || v == son[u])
+            continue;
+        dfss(v, v);
+    }
+}
+int tag[N]; // 补偿轻儿子
+void AC()
+{
+    int n, m;
+    cin >> n >> m;
+    for (int i = 1; i <= n; i++)
+    {
+        g[i].clear();
+        top[i] = sz[i] = dfn[i] = seg[i] = son[i] = fa[i] = tag[i] = dep[i] = 0;
+        cin >> a[i];
+    }
+    idx = 0;
+    for (int i = 1; i < n; i++)
+    {
+        int u, v;
+        cin >> u >> v;
+        g[u].pb(v);
+        g[v].pb(u);
+    }
+    dfs(1, 0);
+    dfss(1, 1);
+    SGT::build(1, n, 1);
+    while (m--)
+    {
+        int op, x, y;
+        cin >> op >> x >> y;
+        if (op == 1)
+        {
+            int ans = -INF;
+            while (top[x] ^ top[y])
+            {
+                if (dep[top[x]] < dep[top[y]])
+                    swap(x, y);
+
+                ans = max(ans, SGT::qmx(dfn[top[x]], dfn[x], 1, n, 1));
+                if (fa[top[x]])
+                    ans = max(ans, a[top[x]] + tag[fa[top[x]]]);
+                // 如果top节点(top节点一定是轻儿子)有爸爸就加上懒更新
+                x = fa[top[x]];
+            }
+            if (dep[x] > dep[y])
+                swap(x, y);
+            ans = max(ans, SGT::qmx(dfn[x], dfn[y], 1, n, 1));
+            if (x == top[x] && fa[x]) // 如果最后x也是轻儿子
+            {
+                ans = max(ans, a[x] + tag[fa[x]]);
+            }
+            cout << ans << endl;
+        }
+        else
+        {
+            if (fa[x]) // 要把他的爸爸加上 因为他的爸爸可能是轻儿子
+            {
+                a[fa[x]] += y;                    // a数组要同步更新
+                SGT::add(dfn[fa[x]], 1, n, 1, y); // 既要更新a数组又要更新线段树
+            }
+            if (son[x]) // 重儿子不用更新a数组， 因为a数组只有轻儿子需要
+            {
+                SGT::add(dfn[son[x]], 1, n, 1, y);
+            }
+            tag[x] += y; /// 为轻儿子用
+        }
+    }
 }
 
