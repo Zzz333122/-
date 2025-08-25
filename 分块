@@ -105,7 +105,7 @@ void AC()
     blen = sqrt(n);               // 块的大小
     bnum = (n + blen - 1) / blen; // 块的数量
     vc<int> bi(n + 1);            // 每个索引对应块的索引是哪个
-    vc<int> lz(bnum + 1);         // 懒更新数组 但是无须下发 只需查找的时候删去即可
+    vc<int> lz(bnum + 1);         // 懒更新数组 但是无须下发 只需查找的时候删去即可****************
     for (int i = 1; i <= n; i++)
     {
         bi[i] = (i - 1) / blen + 1;
@@ -122,7 +122,7 @@ void AC()
         sort(srt.begin() + bl[i], srt.begin() + br[i] + 1); // 给每个块排好序2
     }
 
-    auto inupd = [&](int l, int r, int v)
+    auto inupd = [&](int l, int r, int v) //块内更新 需要直接搞  但是依旧不用改lz
     {
         for (int i = l; i <= r; i++)
         {
@@ -207,25 +207,25 @@ void AC()
 }
 // 分块经典求 第i块到第j块的数据
 
-  for (int i = 1; i <= bnum; i++)
+for (int i = 1; i <= bnum; i++)
+{
+    for (int j = i; j <= bnum; j++)
     {
-        for (int j = i; j <= bnum; j++)
+        int mst = mode[i][j - 1]; // 第i块到第j-1块的众数是什么
+        int mstcnt = gcnt(i, j, mst); // 得到i~j的mst数量
+        for (int k = bl[j]; k <= br[j]; k++)
         {
-            int mst = mode[i][j - 1];
-            int mstcnt = gcnt(i, j, mst);
-            for (int k = bl[j]; k <= br[j]; k++)
+            int cur = a[k];
+            int curcnt = gcnt(i, j, cur);
+            //     cout << "curcnt::" << curcnt << ' ' << mstcnt << endl;
+            if ((mstcnt < curcnt) || (mstcnt == curcnt && cur < mst))
             {
-                int cur = a[k];
-                int curcnt = gcnt(i, j, cur);
-                //     cout << "curcnt::" << curcnt << ' ' << mstcnt << endl;
-                if ((mstcnt < curcnt) || (mstcnt == curcnt && cur < mst))
-                {
-                    // cout << "here" << endl;
-                    mst = cur;
-                    mstcnt = curcnt;
-                }
+                // cout << "here" << endl;
+                mst = cur;
+                mstcnt = curcnt;
             }
-            mode[i][j] = mst;
-            //   cout << i << ' ' << j << ' ' << mode[i][j] << endl;
         }
+        mode[i][j] = mst;
+        //   cout << i << ' ' << j << ' ' << mode[i][j] << endl;
     }
+}
