@@ -67,7 +67,7 @@ void work()
     }
 
 }
-
+//高斯约旦消元 化为 行最简形矩阵
 void work()
 {
     int c, r;
