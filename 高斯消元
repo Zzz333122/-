@@ -15,7 +15,6 @@ void work()
         
        if(fabs(a[t][c])<eps) 
        {
-          
            continue;//如果绝对值最大值等于0说明这列不需要进行操作了，但也同时会存在矛盾方程
        }
        for(int i=c;i<=n+1;i++)//将绝对值最大的一行放在还xz未固定的第一行******
@@ -74,7 +73,7 @@ void work()
     for (c = 1, r = 1; c <= n; c++)
     {
         int t = r;
-        for (int i = r + 1; i <= n; i++)
+        for (int i = r + 1; i <= n; i++)//找到该列绝对值最大的那一行 选绝对值最大是为了尽量避免误差
         {
             if (fabs(a[i][c]) > fabs(a[t][c]))
             {
@@ -83,7 +82,7 @@ void work()
         }
         if (fabs(a[t][c]) < eps)
         {
-            continue;
+            continue;//如果绝对值最大值等于0说明这列不需要进行操作了，但也同时会存在矛盾方程
         }
         for (int i = c; i <= n + 1; i++) // 把绝对值最大的一行弄到最上面
         {
