@@ -106,7 +106,7 @@ void work()
         r++;
     }
     //   cout<<r<<endl;
-    if (r <= n)
+    if (r <= n)  // 要满足有效方程个数大于等于n
     {
         for (int i = r; i <= n; i++)
         {
