@@ -12,7 +12,7 @@ void init(vc<vc<int>> &a, int x = 0) // 0 0矩阵 1 单位矩阵
 }
 void mult(vc<vc<int>> &res, vc<vc<int>> a, vc<vc<int>> b)
 {
-    init(res, 0);
+    init(res, 0); // 记得要先清 0
     int n = res.size();
     for (int i = 1; i < n; i++)
     {
