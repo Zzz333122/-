@@ -12,7 +12,7 @@ void init(vc<vc<int>> &a, int x = 0) // 0 0矩阵 1 单位矩阵
 }
 void mult(vc<vc<int>> &res, vc<vc<int>> a, vc<vc<int>> b)
 {
-    init(res, 0); // 记得要先清 0
+    init(res, 0); // 记得要先清 0**********
     int n = res.size();
     for (int i = 1; i < n; i++)
     {
@@ -33,7 +33,7 @@ void mksm(vc<vc<int>> &res, vc<vc<int>> &a, int k) // 和快速幂思想一样
     {
         if (k & 1)
         {
-            mult(res, a, res);
+            mult(res, res, a);
         }
         k >>= 1;
         mult(a, a, a);
@@ -62,3 +62,5 @@ inline void AC()
     }
     return;
 }
+// 优化1维k阶例题 p1862
+// 优化k维1阶例题 力扣1220
