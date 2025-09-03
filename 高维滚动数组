@@ -1,0 +1,4 @@
+innline int pos(const int &x)
+{
+      return xx%N+1;
+}
