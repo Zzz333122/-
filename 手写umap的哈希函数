@@ -1,0 +1,31 @@
+struct State
+{
+    int r;      // 第几轮
+    vc<int> kp; // 固定了哪些骰子
+    bool operator==(const State &a) const
+    {
+        if (kp.size() != a.kp.size())
+            return 0;
+        for (size_t i = 0; i < kp.size(); i++)
+        {
+            if (kp[i] != a.kp[i])
+                return 0;
+        }
+        return r == a.r;
+    }
+};
+struct Hash
+{
+    size_t operator()(const State &a) const
+    {
+        size_t res = a.r;
+        for (size_t i = 0; i < a.kp.size(); i++)
+        {
+            res = res * 7 + a.kp[i];
+        }
+        for (size_t i = a.kp.size(); i < 5; i++)
+            res *= 7;
+        return res;
+    }
+};
+umap<State, db, Hash> f;
