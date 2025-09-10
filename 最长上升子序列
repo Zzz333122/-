@@ -1,0 +1,19 @@
+vc<int> ed;
+vc<int> pre(k + 1);
+vc<int> id(k + 1, -1);
+for (int i = 1; i <= k; i++)
+{
+    int y = a[i].y;
+    int t = upper_bound(ed.begin(), ed.end(), y) - ed.begin();
+    if (ed.size() == t)
+    {
+        ed.pb(y);
+    }
+    else
+    {
+        ed[t] = y;
+    }
+    id[t] = i;
+    pre[i] = t ? id[t - 1] : -1; //-1表示没有前驱
+}
+cout << ed.size() << endl;
