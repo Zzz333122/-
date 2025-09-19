@@ -1,0 +1,67 @@
+//bfs版 spfa
+void spfa()
+{
+    queue<int> q;
+    
+    for(int i=1;i<=n;i++)//所有都入队
+    {
+        dis[i] = 0;
+        q.push(i);
+        mark[i]=1;
+    }
+    while(q.size())
+    {
+        int t=q.front();
+        q.pop();
+        mark[t]=0;
+        for(int i=0;i<g[t].size();i++)
+        {
+            auto j=g[t][i];
+            if(dis[j.y]>dis[t]+j.s)
+            {
+                dis[j.y]=dis[t]+j.s;
+                cnt[j.y]=cnt[t]+1;
+                if(cnt[j.y]>=n)
+                {
+                    cout<<"Yes";
+                    return;
+                }
+                if(!mark[j.y])
+                {
+                    q.push(j.y);
+                    mark[j.y]=1;
+                }
+            }
+        }
+    }
+    puts("No");
+    return;
+}
+// dfs版 spfa 效率更高
+    vc<int> vis(n + 1);
+    vc<db> dis(n + 1);
+    auto dfs = [&](auto dfs, int u) -> bool
+    {
+        if (u == 0)
+        {
+            for (int i = 1; i <= n; i++)
+            {
+                if (dfs(dfs, i, x))
+                    return 1;
+            }
+            return 0;
+        }
+        vis[u] = 1;
+        for (auto [v, w] : g[u])
+        {
+            if (dis[v] >= dis[u] + w)
+            {
+                dis[v] = dis[u] + w;
+                if (vis[v] || dfs(dfs, v, x))
+                    return 1;
+            }
+        }
+        vis[u] = 0;
+        return 0;
+    };
+
