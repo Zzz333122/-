@@ -1,0 +1,41 @@
+//无向图
+vector<bool> visited;     // 标记节点是否访问过
+vector<int> parent;       // 记录父节点
+
+// 从u出发，判断是否有环
+bool dfs(int u, int p) {
+    visited[u] = true;
+    parent[u] = p;  // 记录父节点
+    
+    for (int v : adj[u]) {  // 遍历所有邻接节点
+        if (!visited[v]) {  // 未访问过，继续DFS
+            if (dfs(v, u)) return true;  // 子树有环，返回true
+        } 
+        // 已访问过，且不是父节点 → 存在环
+        else if (v != parent[u]) {  
+            return true;
+        }
+    }
+    return false;  // 无环
+}
+//有向图
+//设置一个超级源点 0 指向所有点 
+
+// 从u出发，判断是否有环
+bool dfs(int u) {
+    visited[u] = true;
+    inStack[u] = true;  // 将当前节点加入递归栈
+    
+    for (int v : adj[u]) {  // 遍历所有邻接节点
+        if (!visited[v]) {  // 未访问过，继续DFS
+            if (dfs(v)) return true;  // 子树有环，返回true
+        } 
+        // 已访问且在当前递归栈中 → 存在环
+        else if (inStack[v]) {  
+            return true;
+        }
+    }
+    
+    inStack[u] = false;  // 回溯：将当前节点移出递归栈
+    return false;
+}
