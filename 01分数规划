@@ -35,7 +35,7 @@
         while (r - l > eps)
         {
             db mid = (r + l) / 2;
-            if (check(mid))
+            if (check(mid)) //本题目要找的是最大值所以二分大于等于，若求最小值二分小于等于
             {
                 ans = mid;
                 l = mid;
