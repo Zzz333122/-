@@ -1,3 +1,4 @@
+//设置一个超级源点 0 指向所有点 但其他点不指向他
 //无向图
 vector<bool> visited;     // 标记节点是否访问过
 vector<int> parent;       // 记录父节点
@@ -19,7 +20,7 @@ bool dfs(int u, int p) {
     return false;  // 无环
 }
 //有向图
-//设置一个超级源点 0 指向所有点 
+
 
 // 从u出发，判断是否有环
 bool dfs(int u) {
